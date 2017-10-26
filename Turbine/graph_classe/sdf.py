@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+# from builtins import str
 from fractions import gcd
 from Turbine.graph_classe.dataflow import Dataflow
 from Turbine.algorithms.period_computation import ComputePeriod
@@ -8,13 +10,13 @@ class SDF(Dataflow):
     #                           CONSTANT                                   #
     ########################################################################
     # -------------------------Task----------------------------------------#
-    __CONST_TASK_DURATION = "tdur"
+    __CONST_TASK_DURATION = u"tdur"
 
     # -------------------------Arc-----------------------------------------#
-    __CONST_ARC_CONS_RATE = "consw"
-    __CONST_ARC_PROD_RATE = "prodw"
+    __CONST_ARC_CONS_RATE = u"consw"
+    __CONST_ARC_PROD_RATE = u"prodw"
 
-    def __init__(self, name=""):
+    def __init__(self, name=u""):
         """
 
         :type name: str
@@ -23,10 +25,10 @@ class SDF(Dataflow):
 
     def __str__(self):
         ret = super(SDF, self).__str__()
-        ret += "\nGraph type: "
+        ret += u"\nGraph type: "
         if self.is_normalized:
-            ret += "Normalized "
-        ret += "SDF"
+            ret += u"Normalized "
+        ret += u"SDF"
         return ret
 
     def __eq__(self, other):
@@ -42,7 +44,7 @@ class SDF(Dataflow):
 
     @staticmethod
     def get_dataflow_type():
-        return "SDF"
+        return u"SDF"
 
     @property
     def is_sdf(self):

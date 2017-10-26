@@ -1,3 +1,7 @@
+from builtins import str
+from builtins import range
+from builtins import object
+from future.utils import native_str
 from copy import copy
 import logging
 
@@ -7,7 +11,7 @@ except ImportError:
     from glpk import *
 
 
-class SolverSC2:
+class SolverSC2(object):
     def __init__(self, graph, verbose, lp_filename):
         self.dataflow = graph
         self.verbose = verbose
@@ -174,14 +178,14 @@ class SolverSC2:
 
     # Add a variable lamda
     def __add_col_v(self, col, name):
-        glp_set_col_name(self.prob, col, name.replace(' ', ''))
+        glp_set_col_name(self.prob, col, native_str(name.replace(' ', '')))
         glp_set_col_bnds(self.prob, col, GLP_FR, 0.0, 0.0)
         glp_set_obj_coef(self.prob, col, 0.0)
         self.colv[name] = col
 
     # Add a variable M0
     def __add_col_m0(self, col, name, arc):
-        glp_set_col_name(self.prob, col, name.replace(' ', ''))
+        glp_set_col_name(self.prob, col, native_str(name.replace(' ', '')))
         glp_set_col_bnds(self.prob, col, GLP_LO, 0.0, 0.0)
         glp_set_obj_coef(self.prob, col, 1.0)
         self.col_m0[arc] = col
@@ -189,7 +193,7 @@ class SolverSC2:
     # Add a variable FM0
     def __add_col_fm0(self, col, name, arc):
         glp_set_col_kind(self.prob, col, GLP_CV)
-        glp_set_col_name(self.prob, col, name.replace(' ', ''))
+        glp_set_col_name(self.prob, col, native_str(name.replace(' ', '')))
         glp_set_col_bnds(self.prob, col, GLP_LO, 0, 0)
         self.col_fm0[arc] = col
 
@@ -211,7 +215,7 @@ class SolverSC2:
         self.k += 1
 
         glp_set_row_bnds(self.prob, row, GLP_LO, w + 1, 0.0)  # W2+1 cause there is no strict bound with GLPK
-        glp_set_row_name(self.prob, row, "r_" + str(row))
+        glp_set_row_name(self.prob, row, native_str("r_" + str(row)))
 
     # Add a constraint: FM0*step = M0
     def __add_f_row(self, row, arc, step):
@@ -226,7 +230,7 @@ class SolverSC2:
         self.k += 1
 
         glp_set_row_bnds(self.prob, row, GLP_FX, 0.0, 0.0)
-        glp_set_row_name(self.prob, row, "step" + str(arc))
+        glp_set_row_name(self.prob, row, native_str("step" + str(arc)))
 
     # For a couple of arcs, return the max between there in-predOut or predIn + threshold - predOut
     # if the graph have threshold
@@ -254,7 +258,7 @@ class SolverSC2:
         pred_prod = 0
         pred_cons = 0
         cons = 0
-        for phase in xrange(phase_count):
+        for phase in range(phase_count):
             if phase > 0:
                 pred_prod += prod_list[phase - 1]
                 pred_cons += cons_list[phase - 1]

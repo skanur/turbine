@@ -1,7 +1,9 @@
+from builtins import str
+from builtins import object
 import logging
 
 
-class Parameters:
+class Parameters(object):
     """This class contains all options for generate dataflow dataflow
     """
 

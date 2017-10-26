@@ -1,3 +1,7 @@
+from builtins import str
+from builtins import range
+from builtins import object
+from future.utils import native_str
 import logging
 
 try:
@@ -6,7 +10,7 @@ except ImportError:
     from glpk import *
 
 
-class SolverSC1:
+class SolverSC1(object):
     def __init__(self, dataflow, verbose, lp_filename):
         self.dataflow = dataflow
         self.verbose = verbose
@@ -78,7 +82,7 @@ class SolverSC1:
                 phase_count = self.dataflow.get_phase_count(task)
             if self.dataflow.is_pcg:
                 phase_count += self.dataflow.get_ini_phase_count(task)
-            for i in xrange(phase_count):
+            for i in range(phase_count):
                 self.__add_col_v(col, str(task) + "/" + str(i))
                 col += 1
 
@@ -143,13 +147,13 @@ class SolverSC1:
                 arc_gcd = self.dataflow.get_gcd(arc)
 
                 pred_prod = 0
-                for source_phase in xrange(range_source):  # source/prod/out normaux
+                for source_phase in range(range_source):  # source/prod/out normaux
                     if source_phase > 0:
                         pred_prod += prod_list[source_phase - 1]
 
                     pred_cons = 0
                     cons = 0
-                    for target_phase in xrange(range_target):  # target/cons/in normaux
+                    for target_phase in range(range_target):  # target/cons/in normaux
                         cons += cons_list[target_phase]
                         if target_phase > 0:
                             pred_cons += cons_list[target_phase - 1]
@@ -183,8 +187,8 @@ class SolverSC1:
             for arc in self.dataflow.get_arc_list():
                 source = self.dataflow.get_source(arc)
                 target = self.dataflow.get_target(arc)
-                for phaseS in xrange(self.__get_range_phases(source)):
-                    for phaseT in xrange(self.__get_range_phases(target)):
+                for phaseS in range(self.__get_range_phases(source)):
+                    for phaseT in range(self.__get_range_phases(target)):
                         logging.debug(
                             str(arc) + " V" + str(source) + "/" + str(phaseS) + ": " +
                             str(glp_get_col_prim(self.prob, self.colV[str(source) + "/" + str(phaseS)]))
@@ -219,14 +223,14 @@ class SolverSC1:
 
     # Add a variable lamda
     def __add_col_v(self, col, name):
-        glp_set_col_name(self.prob, col, name)
+        glp_set_col_name(self.prob, col, native_str(name))
         glp_set_col_bnds(self.prob, col, GLP_LO, 0, 0)
         glp_set_obj_coef(self.prob, col, 0.0)
         self.colV[name] = col
 
     # Add a variable M0
     def __add_col_m0(self, col, name, arc):
-        glp_set_col_name(self.prob, col, name)
+        glp_set_col_name(self.prob, col, native_str(name))
         glp_set_col_bnds(self.prob, col, GLP_LO, 0, 0)
         glp_set_obj_coef(self.prob, col, 1.0)
         self.col_m0[arc] = col
@@ -234,7 +238,7 @@ class SolverSC1:
     # Add a variable FM0
     def __add_col_fm0(self, col, name, arc):
         glp_set_col_kind(self.prob, col, GLP_IV)
-        glp_set_col_name(self.prob, col, name)
+        glp_set_col_name(self.prob, col, native_str(name))
         glp_set_col_bnds(self.prob, col, GLP_LO, 0, 0)
         glp_set_obj_coef(self.prob, col, 0.0)
         self.col_fm0[arc] = col
@@ -257,7 +261,7 @@ class SolverSC1:
         self.k += 1
 
         glp_set_row_bnds(self.prob, row, GLP_LO, w + 0.001, 0.0)  # W1+1 cause there is no strict bound with GLPK
-        glp_set_row_name(self.prob, row, "r_" + str(row))
+        glp_set_row_name(self.prob, row, native_str("r_" + str(row)))
 
     # Add a constraint: FM0*step = M0
     def __add_f_row(self, row, arc, step):
@@ -272,7 +276,7 @@ class SolverSC1:
         self.k += 1
 
         glp_set_row_bnds(self.prob, row, GLP_FX, 0.0, 0.0)
-        glp_set_row_name(self.prob, row, "step" + str(arc))
+        glp_set_row_name(self.prob, row, native_str("step" + str(arc)))
 
     def __get_range_phases(self, task):
         if self.dataflow.is_sdf:

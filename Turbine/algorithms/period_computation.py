@@ -1,6 +1,11 @@
 """
 Created on Jul 8, 2014
 """
+from __future__ import division
+from builtins import str
+from builtins import range
+from builtins import object
+from past.utils import old_div
 from fractions import gcd
 import logging
 
@@ -10,7 +15,7 @@ except ImportError:
     from glpk import *
 
 
-class ComputePeriod:
+class ComputePeriod(object):
     """
     Compute the period of the 1-periodic schedule for a SDF graph.
     """
@@ -79,7 +84,7 @@ class ComputePeriod:
                 self.__add_col_start(col, "T" + str(task), task)
                 col += 1
             elif self.dataflow.is_csdf:
-                for i in xrange(self.dataflow.get_phase_count(task)):
+                for i in range(self.dataflow.get_phase_count(task)):
                     self.__add_col_start(col, "T" + str(task) + "|" + str(i), (task, i))
                     col += 1
 
@@ -99,8 +104,8 @@ class ComputePeriod:
             for arc in self.dataflow.get_arc_list():
                 source = self.dataflow.get_source(arc)
                 target = self.dataflow.get_target(arc)
-                for i in xrange(self.dataflow.get_phase_count(source)):
-                    for j in xrange(self.dataflow.get_phase_count(target)):
+                for i in range(self.dataflow.get_phase_count(source)):
+                    for j in range(self.dataflow.get_phase_count(target)):
                         if not self.dataflow.is_arc_reentrant(arc) or (not i == j and i < j):
                             if self.__compute_amin(arc, i, j) <= self.__compute_amax(arc, i, j):
                                 row_count += 1
@@ -143,9 +148,9 @@ class ComputePeriod:
                     self.__add_main_row(row, source, target, n_coef, lti)
                     row += 1
             elif self.dataflow.is_csdf:
-                for i in xrange(self.dataflow.get_phase_count(source)):
+                for i in range(self.dataflow.get_phase_count(source)):
                     ltik = self.dataflow.get_phase_duration_list(source)[i]
-                    for j in xrange(self.dataflow.get_phase_count(target)):
+                    for j in range(self.dataflow.get_phase_count(target)):
                         amax = self.__compute_amax(arc, i, j)
                         if self.__compute_amin(arc, i, j) <= amax:
                             if not self.dataflow.is_arc_reentrant(arc) or (not i == j and i < j):
@@ -160,7 +165,7 @@ class ComputePeriod:
                 if self.dataflow.get_phase_count(task) > 1:
                     self.__add_non_overlap_row(row, task, self.dataflow.get_phase_count(task) - 1, 0)
                     row += 1
-                    for phase in xrange(self.dataflow.get_phase_count(task) - 1):
+                    for phase in range(self.dataflow.get_phase_count(task) - 1):
                         self.__add_non_overlap_row(row, task, phase, phase + 1)
                         row += 1
 
@@ -198,7 +203,7 @@ class ComputePeriod:
             if self.dataflow.is_sdf:
                 start_time[task] = glp_get_col_prim(self.prob, self.col_start[task])
             if self.dataflow.is_csdf:
-                for phase in xrange(self.dataflow.get_phase_count(task)):
+                for phase in range(self.dataflow.get_phase_count(task)):
                     value = glp_get_col_prim(self.prob, self.col_start[(task, phase)])
                     start_time[(task, phase)] = value
         return n, start_time
@@ -213,14 +218,14 @@ class ComputePeriod:
                     z = self.dataflow.get_prod_rate(self.dataflow.get_arc_list(source=task)[0])
                 except IndexError:
                     z = self.dataflow.get_cons_rate(self.dataflow.get_arc_list(target=task)[0])
-                kmin = max(kmin, float(l) / float(z))
+                kmin = max(kmin, old_div(float(l), float(z)))
             else:
                 try:
                     z = sum(self.dataflow.get_prod_rate_list(self.dataflow.get_arc_list(source=task)[0]))
                 except IndexError:
                     z = sum(self.dataflow.get_cons_rate_list(self.dataflow.get_arc_list(target=task)[0]))
                 for duration in self.dataflow.get_phase_duration_list(task):
-                    kmin = max(kmin, float(duration) / float(z))
+                    kmin = max(kmin, old_div(float(duration), float(z)))
 
         glp_set_col_name(self.prob, col, name)
         glp_set_col_bnds(self.prob, col, GLP_LO, kmin, 0.0)

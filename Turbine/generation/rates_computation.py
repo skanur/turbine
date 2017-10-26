@@ -1,9 +1,15 @@
+from __future__ import division
+from builtins import zip
+from builtins import str
+from builtins import range
+from past.utils import old_div
 from fractions import gcd
 from Turbine.calc.lcm import lcm
 from random import shuffle, randint, sample
 import logging
 
 import numpy
+from functools import reduce
 
 
 def constrained_sum_sample_pos(n, total):
@@ -20,7 +26,7 @@ def constrained_sum_sample_pos(n, total):
         shuffle(x)
         return x
 
-    dividers = sample(xrange(total), n - 1)
+    dividers = sample(range(total), n - 1)
     dividers.sort()
     return [int(a - b) for a, b in zip(dividers + [total], [0] + dividers)]
 
@@ -49,7 +55,7 @@ def __generate_rv(dataflow, c_param):
     n = dataflow.get_task_count()
     div = numpy.random.exponential(0.25)
     div = n + int(div * n)
-    rv_list = numpy.random.multinomial(sum_rv, numpy.ones(n) / div)
+    rv_list = numpy.random.multinomial(sum_rv, old_div(numpy.ones(n), div))
     __get_non_zero_list(rv_list)
 
     # Modify the two last integers of the list to get a gcd equal to 1
@@ -76,7 +82,7 @@ def __generate_rates(dataflow, c_param):
         lcm_value = lcm(lcm_value, dataflow.get_repetition_factor(task))
 
     for task in dataflow.get_task_list():
-        zi = lcm_value / dataflow.get_repetition_factor(task)
+        zi = old_div(lcm_value, dataflow.get_repetition_factor(task))
         if zi == 0:
             logging.fatal("lcmValue" + str(lcm_value))
             logging.fatal("null rate when generating, this Exception should never occur...")
@@ -178,7 +184,7 @@ def __generate_initial_phase_lists(dataflow, c_param):
 
 
 def __get_non_zero_list(random_list):
-    for i in xrange(len(random_list)):  # A modifier
+    for i in range(len(random_list)):  # A modifier
         if random_list[i] == 0:
             rang = 0
             go = True

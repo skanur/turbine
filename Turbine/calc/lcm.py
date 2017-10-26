@@ -1,8 +1,10 @@
+from __future__ import division
+from past.utils import old_div
 from fractions import gcd
 
 
 def lcm(a, b):
-    return abs(a * b) / gcd(a, b)
+    return old_div(abs(a * b), gcd(a, b))
 
 
 def lcm_list(l):

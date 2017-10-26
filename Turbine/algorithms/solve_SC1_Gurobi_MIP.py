@@ -1,9 +1,12 @@
+from builtins import str
+from builtins import range
+from builtins import object
 import os
 from gurobipy import Model, GRB, LinExpr, QuadExpr
 import logging
 
 
-class SolveSC1GuMIP:
+class SolveSC1GuMIP(object):
     """
     Solve the initial marking problem optimally using Guroby (it must be install).
     
@@ -61,7 +64,7 @@ class SolveSC1GuMIP:
         # Create column lambda (v)
         for task in self.dataflow.get_task_list():
             phase_count = self.__get_range_phases(task)
-            for i in xrange(phase_count):
+            for i in range(phase_count):
                 self.__add_col_v(str(task) + "/" + str(i))
 
         # Integrate new variables
@@ -93,13 +96,13 @@ class SolveSC1GuMIP:
                 arc_gcd = self.dataflow.get_gcd(arc)
 
                 pred_prod = 0
-                for sourcePhase in xrange(range_source):  # source/prod/out normaux
+                for sourcePhase in range(range_source):  # source/prod/out normaux
                     if sourcePhase > 0:
                         pred_prod += prod_list[sourcePhase - 1]
 
                     pred_cons = 0
                     cons = 0
-                    for targetPhase in xrange(range_target):  # target/cons/in normaux
+                    for targetPhase in range(range_target):  # target/cons/in normaux
                         cons += cons_list[targetPhase]
                         if targetPhase > 0:
                             pred_cons += cons_list[targetPhase - 1]

@@ -1,3 +1,5 @@
+from builtins import str
+from builtins import range
 import logging
 
 from Turbine.algorithms.solve_SC1 import SolverSC1
@@ -136,7 +138,7 @@ def __calc_reentrant(dataflow):
             pred_out = 0
             pred_in = 0
             in_v = 0
-            for phase in xrange(phase_count):
+            for phase in range(phase_count):
                 if phase > 0:
                     pred_out += prod_list[phase - 1]
                     pred_in += cons_list[phase - 1]

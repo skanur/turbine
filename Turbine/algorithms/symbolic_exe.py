@@ -1,8 +1,14 @@
+from __future__ import print_function
+from __future__ import division
+from builtins import str
+from builtins import range
+from builtins import object
+from past.utils import old_div
 import logging
 import time
 
 
-class SymbolicExe:
+class SymbolicExe(object):
     """
     This class execute the As Soon As Possible Schedule (ASAP) to detect dead-lock.
     It also return the schedule (dict composed of list of start time for each task).
@@ -43,17 +49,17 @@ class SymbolicExe:
             num_task_exe[task] = 0
         # ~ print "PHASE ONE"
         while not terminate:
-            min_rt_exe = num_task_exe[0] / self.dataflow.get_repetition_factor(0)
-            max_rt_exe = num_task_exe[0] / self.dataflow.get_repetition_factor(0)
+            min_rt_exe = old_div(num_task_exe[0], self.dataflow.get_repetition_factor(0))
+            max_rt_exe = old_div(num_task_exe[0], self.dataflow.get_repetition_factor(0))
             for task in self.dataflow.get_task_list():  # zero executed task
                 executed_task[task] = False
-                min_rt_exe = min(min_rt_exe, int(num_task_exe[task] / self.dataflow.get_repetition_factor(task)))
-                max_rt_exe = max(max_rt_exe, int(num_task_exe[task] / self.dataflow.get_repetition_factor(task)))
+                min_rt_exe = min(min_rt_exe, int(old_div(num_task_exe[task], self.dataflow.get_repetition_factor(task))))
+                max_rt_exe = max(max_rt_exe, int(old_div(num_task_exe[task], self.dataflow.get_repetition_factor(task))))
             # cf the comment on self.__RT_MAX_RATIO to understand what's going on here.
 
             if min_rt_exe == 0:
                 min_rt_exe = 1
-            if max_rt_exe / min_rt_exe > self.__RT_MAX_RATIO:
+            if old_div(max_rt_exe, min_rt_exe) > self.__RT_MAX_RATIO:
                 logging.info("Infinite loop detected, some part of the graph is dead lock !")
                 return -1
             # 1 - Choose which task can be execute
@@ -70,7 +76,7 @@ class SymbolicExe:
                         phase_count = float(self.dataflow.get_phase_count(task))
 
                     rep_fact = float(self.dataflow.get_repetition_factor(task))
-                    if step_two and float(num_task_exe[task]) / phase_count == rep_fact * nb_ite:
+                    if step_two and old_div(float(num_task_exe[task]), phase_count) == rep_fact * nb_ite:
                         # If the task has been executed enought then don't execute it
                         executed_task[task] = False
                         task_execute -= 1
@@ -100,7 +106,7 @@ class SymbolicExe:
             increment = 0
             # Compute the minimum time tick increment for the execution.
             if self.tick_left:
-                increment = min(self.tick_left.items(), key=lambda x: x[1])[1]
+                increment = min(list(self.tick_left.items()), key=lambda x: x[1])[1]
             # Temp list to del task with time tick left at 0
             del_temp = []
             for task in self.currently_executed:
@@ -143,7 +149,7 @@ class SymbolicExe:
                     else:
                         phase_count = float(self.dataflow.get_phase_count(task))
                     rep_fact = float(self.dataflow.get_repetition_factor(task))
-                    if float(num_task_exe[task]) / phase_count == rep_fact * nb_ite:
+                    if old_div(float(num_task_exe[task]), phase_count) == rep_fact * nb_ite:
                         num_exe += 1
                 # If all task have been executed enought the symbolic exe is successful
                 if num_exe == self.dataflow.get_task_count():
@@ -180,7 +186,7 @@ class SymbolicExe:
             if self.dataflow.is_sdf:
                 self.start_time[task] = []
             if self.dataflow.is_csdf:
-                for phase in xrange(self.dataflow.get_phase_count(task)):
+                for phase in range(self.dataflow.get_phase_count(task)):
                     self.start_time[(task, phase)] = []
             if self.dataflow.is_pcg:
                 self.currentPhase[task] = -self.dataflow.get_ini_phase_count(task)
@@ -272,8 +278,8 @@ class SymbolicExe:
     # Print the actual amount of each bds (arcs)
     def print_buffer(self):
         for arc in self.dataflow.get_arc_list():
-            print str(arc) + " M0: " + str(self.M0[arc])
-        print "------------------------------"
+            print(str(arc) + " M0: " + str(self.M0[arc]))
+        print("------------------------------")
 
     # Print all arc which are blocking the graph. If all task are impacted, the graph is not alive.
     def print_blocking_task(self):
@@ -281,15 +287,15 @@ class SymbolicExe:
             if not self.__is_executable(task):
                 for inArc in self.dataflow.get_arc_list(target=task):
                     if self.M0[inArc] < self.__get_token_need(inArc):
-                        print "BLOCKING ARC: " + str(inArc) + " phase: " + str(self.currentPhase[task]) + " need: " \
+                        print("BLOCKING ARC: " + str(inArc) + " phase: " + str(self.currentPhase[task]) + " need: " \
                               + str(self.__get_token_need(inArc)) + " bds: " + str(self.M0[inArc]) + " STEP: " \
-                              + str(self.dataflow.get_gcd(inArc))
+                              + str(self.dataflow.get_gcd(inArc)))
 
     # Print all task that can be executed. If None, the graph is not alive.
     def print_no_blocking_task(self):
         for task in self.dataflow.get_task_list():
             for inArc in self.dataflow.get_arc_list(target=task):
                 if self.M0[inArc] > self.__get_token_need(inArc):
-                    print "NO BLOCKING ARC: " + str(inArc) + " phase: " + str(self.currentPhase[task]) + " need: " \
+                    print("NO BLOCKING ARC: " + str(inArc) + " phase: " + str(self.currentPhase[task]) + " need: " \
                           + str(self.__get_token_need(inArc)) + " bds: " + str(self.M0[inArc]) + " STEP: " \
-                          + str(self.dataflow.get_gcd(inArc))
+                          + str(self.dataflow.get_gcd(inArc)))

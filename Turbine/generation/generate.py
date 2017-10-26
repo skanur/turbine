@@ -1,9 +1,10 @@
+from builtins import str
 import logging
 from time import time
 
-from marking_computation import compute_initial_marking
-from rates_computation import generate_rates
-from graph_computation import generate_dataflow
+from Turbine.generation.marking_computation import compute_initial_marking
+from Turbine.generation.rates_computation import generate_rates
+from Turbine.generation.graph_computation import generate_dataflow
 from Turbine.param.parameters import Parameters
 
 

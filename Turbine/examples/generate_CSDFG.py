@@ -1,10 +1,11 @@
 """
 Example of how to generate a Cyclo-Static dataflow graph
 """
+from __future__ import print_function
 from Turbine.generation.generate import generate
 from Turbine.param.parameters import Parameters
 
-print "###### Setup the CSDF generation ####"
+print("###### Setup the CSDF generation ####")
 c_param = Parameters()
 
 # Set the CSDF type for the generation
@@ -21,6 +22,6 @@ c_param.set_max_task_degree(3)
 # Number of task in the dataflow
 c_param.set_nb_task(100)
 
-print "###### Generate CSDF dataflow #######"
+print("###### Generate CSDF dataflow #######")
 CSDFG = generate("Test_of_SDFG", c_param)
-print CSDFG
+print(CSDFG)

@@ -1,3 +1,6 @@
+from builtins import str
+from builtins import range
+from builtins import object
 from copy import copy
 import logging
 import os
@@ -10,7 +13,7 @@ except ImportError:
     from glpk import *
 
 
-class SolveSC2GuMIP:
+class SolveSC2GuMIP(object):
     def __init__(self, graph, verbose, lp_filename):
         self.dataflow = graph
         self.verbose = verbose
@@ -181,7 +184,7 @@ class SolveSC2GuMIP:
         pred_prod = 0
         pred_cons = 0
         cons = 0
-        for phase in xrange(phase_count):
+        for phase in range(phase_count):
             if phase > 0:
                 pred_prod += prod_list[phase - 1]
                 pred_cons += cons_list[phase - 1]

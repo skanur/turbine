@@ -1,3 +1,7 @@
+from __future__ import unicode_literals
+# from builtins import str
+from builtins import object
+from future.utils import python_2_unicode_compatible
 import logging
 
 import networkx as nx
@@ -13,24 +17,20 @@ class Dataflow(object):
     #                           CONSTANT                                   #
     ########################################################################
     # --------------------------Task----------------------------------------#
-    _CONST_TASK_NAME = "tName"
-    _CONST_TASK_REPETITION_FACTOR = "repFac"
+    _CONST_TASK_NAME = u"tName"
+    _CONST_TASK_REPETITION_FACTOR = u"repFac"
 
     # --------------------------Arc-----------------------------------------#
-    _CONST_ARC_NAME = "aName"
+    _CONST_ARC_NAME = u"aName"
 
-    _CONST_ARC_PRELOAD = "aPrel"
-    _CONST_ARC_TOKEN_SIZE = "tokS"
-    _CONST_ARC_GCD = "aGcd"
+    _CONST_ARC_PRELOAD = u"aPrel"
+    _CONST_ARC_TOKEN_SIZE = u"tokS"
+    _CONST_ARC_GCD = u"aGcd"
 
-    _CONST_ARC_CONS_PORT_NAME = "cPN"
-    _CONST_ARC_PROD_PORT_NAME = "pPN"
+    _CONST_ARC_CONS_PORT_NAME = u"cPN"
+    _CONST_ARC_PROD_PORT_NAME = u"pPN"
 
-    def __init__(self, name=""):
-        """
-
-        :type name: basestring
-        """
+    def __init__(self, name=u""):
         self.name = name
         self.nxg = nx.MultiDiGraph(name=name)
         self.task_key = 0
@@ -39,26 +39,27 @@ class Dataflow(object):
         self.taskByName = {}
         self.arcByName = {}
 
+    @python_2_unicode_compatible
     def __str__(self):
-        ret = "Name: " + str(self.name) + "\n"
-        ret += "Graph Properties: "
+        ret = u"Name: " + str(self.name) + u"\n"
+        ret += u"Graph Properties: "
         if self.is_cyclic:
-            ret += "cyclic, "
+            ret += u"cyclic, "
         else:
-            ret += "dag, "
+            ret += u"dag, "
         if self.is_reentrant:
-            ret += "reentrant"
+            ret += u"reentrant"
         else:
-            ret += "not reentrant"
+            ret += u"not reentrant"
         if self.is_multi_graph:
-            ret += ", multi-graph\n"
+            ret += u", multi-graph\n"
         else:
-            ret += ", not multi-graph\n"
-        ret += "Task count: " + str(self.get_task_count()) + ", Arc count: " + str(self.get_arc_count()) + "\n"
+            ret += u", not multi-graph\n"
+        ret += u"Task count: " + str(self.get_task_count()) + u", Arc count: " + str(self.get_arc_count()) + u"\n"
         tot = 0
         for arc in self.get_arc_list():
             tot += self.get_initial_marking(arc)
-        ret += "Tot initial marking: " + str(tot)
+        ret += u"Tot initial marking: " + str(tot)
         return ret
 
     def set_name(self, name):
@@ -69,7 +70,7 @@ class Dataflow(object):
         import matplotlib.pyplot as plt
         plt.show()
 
-    def draw_to_pdf(self, name="dataflow"):
+    def draw_to_pdf(self, name=u"dataflow"):
         from Turbine.draw.draw_dot import Dot
         d = Dot(self)
         d.write_pdf(name)
@@ -84,11 +85,11 @@ class Dataflow(object):
         """
         new_task = self.task_key
         if name is None:
-            name = "t" + str(new_task)
+            name = u"t" + str(new_task)
 
         try:  # Detect if a task with the same name exist
             self.get_task_by_name(name)
-            logging.error("Name already used by another task")
+            logging.error(u"Name already used by another task")
             return None  # If it is the case the present task is not add.
         except KeyError:
             pass
@@ -224,7 +225,7 @@ class Dataflow(object):
         try:
             return self.nxg.node[task][attrib_name]
         except:
-            raise KeyError("Attribute " + attrib_name + " of task ref " + str(task) + " not found")
+            raise KeyError(u"Attribute " + attrib_name + u" of task ref " + str(task) + u" not found")
 
     ########################################################################
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~SETTER of tasks~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -281,16 +282,16 @@ class Dataflow(object):
         """
 
         self.nxg.add_edge(source, target)
-        key = self.nxg.edge[source][target].items()[-1][0]
+        key = list(self.nxg.edge[source][target].items())[-1][0]
         arc = (source, target, key)
 
         self.set_initial_marking(arc, 0)
         self.set_token_size(arc, 1)
 
-        self.set_cons_port_name(arc, "cons" + str(source) + "" + str(target) + "" + str(key))
-        self.set_prod_port_name(arc, "prod" + str(source) + "" + str(target) + "" + str(key))
+        self.set_cons_port_name(arc, u"cons" + str(source) + u"" + str(target) + u"" + str(key))
+        self.set_prod_port_name(arc, u"prod" + str(source) + u"" + str(target) + u"" + str(key))
 
-        arc_name = "a" + str(self.arc_key)
+        arc_name = u"a" + str(self.arc_key)
         self.arc_key += 1
 
         self.set_arc_name(arc, arc_name)

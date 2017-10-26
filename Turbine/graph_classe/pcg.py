@@ -1,6 +1,10 @@
+from __future__ import unicode_literals
+# from builtins import str
+from builtins import range
 from fractions import gcd
 
 from Turbine.graph_classe.csdf import CSDF
+from functools import reduce
 
 
 class PCG(CSDF):
@@ -8,16 +12,16 @@ class PCG(CSDF):
     #                           CONSTANT                                   #
     ########################################################################
     # -------------------------Task----------------------------------------#
-    __CONST_INI_PHASE_DURATION_LIST = "iniPhaDurL"
+    __CONST_INI_PHASE_DURATION_LIST = u"iniPhaDurL"
 
     # -------------------------Arc-----------------------------------------#
-    __CONST_ARC_INI_CONS_RATE_LIST = "iniCL"
-    __CONST_ARC_INI_PROD_RATE_LIST = "iniPL"
+    __CONST_ARC_INI_CONS_RATE_LIST = u"iniCL"
+    __CONST_ARC_INI_PROD_RATE_LIST = u"iniPL"
 
-    __CONST_ARC_THRESHOLD_LIST = "thrL"
-    __CONST_ARC_INI_THRESHOLD_LIST = "iniThrL"
+    __CONST_ARC_THRESHOLD_LIST = u"thrL"
+    __CONST_ARC_INI_THRESHOLD_LIST = u"iniThrL"
 
-    def __init__(self, name=""):
+    def __init__(self, name=u""):
         """
 
         :type name: basestring
@@ -37,7 +41,7 @@ class PCG(CSDF):
 
     @staticmethod
     def get_dataflow_type():
-        return "PCG"
+        return u"PCG"
 
     @property
     def is_sdf(self):
@@ -236,13 +240,13 @@ class PCG(CSDF):
             after the semicolon :
                 production : 3,6
         """
-        result = ""
+        result = u""
         for i in range(0, self.get_ini_phase_count(arc[0])):
-            result += str(int(self.get_ini_prod_rate_list(arc)[i])) + ","
+            result += str(int(self.get_ini_prod_rate_list(arc)[i])) + u","
         if len(result) > 0:
-            result = result[0:-1] + ";"  # del the last comma
+            result = result[0:-1] + u";"  # del the last comma
         for i in range(0, self.get_phase_count(arc[0])):
-            result += str(int(self.get_prod_rate_list(arc)[i])) + ","
+            result += str(int(self.get_prod_rate_list(arc)[i])) + u","
         return result[0:-1]  # del the last comma
 
     def get_cons_str(self, arc):
@@ -265,22 +269,22 @@ class PCG(CSDF):
                 threshold : 4,6
         (when the threshold is equal to its consumption, it is not display).
         """
-        result = ""
+        result = u""
         if self.get_ini_phase_count(self.get_target(arc)) > 0:
             for i in range(0, self.get_ini_phase_count(self.get_target(arc))):
                 if self.get_ini_cons_rate_list(arc)[i] != self.get_ini_threshold_list(arc)[i]:
                     result += str(int(self.get_ini_cons_rate_list(arc)[i]))\
-                        + ":" + str(int(self.get_ini_threshold_list(arc)[i])) + ","
+                        + u":" + str(int(self.get_ini_threshold_list(arc)[i])) + u","
                 else:
-                    result += str(int(self.get_ini_cons_rate_list(arc)[i])) + ","
+                    result += str(int(self.get_ini_cons_rate_list(arc)[i])) + u","
         if len(result) > 0:
-            result = result[0:-1] + ";"  # del the last comma
+            result = result[0:-1] + u";"  # del the last comma
         for i in range(0, self.get_phase_count(arc[1])):
             if self.get_cons_rate_list(arc)[i] != self.get_threshold_list(arc)[i]:
                 result += str(int(self.get_cons_rate_list(arc)[i])) \
-                    + ":" + str(int(self.get_threshold_list(arc)[i])) + ","
+                    + u":" + str(int(self.get_threshold_list(arc)[i])) + u","
             else:
-                result += str(int(self.get_cons_rate_list(arc)[i])) + ","
+                result += str(int(self.get_cons_rate_list(arc)[i])) + u","
         return result[0:-1]  # del the last comma
 
     def get_duration_str(self, task):
@@ -289,13 +293,13 @@ class PCG(CSDF):
         :rtype : str
         :type task: task
         """
-        result = ""
+        result = u""
         if self.get_phase_count(task) > 0:
             result = str([float(i) for i in self.get_phase_duration_list(task)])[1:-1]
         if self.get_ini_phase_count(task) > 0:
             ini = str([float(i) for i in self.get_ini_phase_duration_list(task)])[1:-1]
             if len(ini) > 0:
-                return (str(ini) + ";" + str(result)).replace(" ", "")
+                return (str(ini) + u";" + str(result)).replace(u" ", u"")
             else:
-                return str(result).replace(" ", "")
-        return str(result).replace(" ", "")
+                return str(result).replace(u" ", u"")
+        return str(result).replace(u" ", u"")

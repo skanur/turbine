@@ -1,3 +1,7 @@
+from __future__ import unicode_literals
+from __future__ import print_function
+# from builtins import str
+from builtins import range
 from fractions import gcd
 
 from Turbine.graph_classe.dataflow import Dataflow
@@ -9,11 +13,11 @@ class CSDF(Dataflow):
     #                           CONSTANT                                   #
     ########################################################################
     # -------------------------Task----------------------------------------#
-    _CONST_PHASE_DURATION_LIST = "pDurL"
+    _CONST_PHASE_DURATION_LIST = u"pDurL"
 
     # -------------------------Arc-----------------------------------------#
-    _CONST_ARC_CONS_RATE_LIST = "cL"
-    _CONST_ARC_PROD_RATE_LIST = "pL"
+    _CONST_ARC_CONS_RATE_LIST = u"cL"
+    _CONST_ARC_PROD_RATE_LIST = u"pL"
 
     def __init__(self, name=""):
         """
@@ -24,11 +28,11 @@ class CSDF(Dataflow):
 
     def __str__(self):
         ret = super(CSDF, self).__str__()
-        ret += "\nGraph type: "
+        ret += u"\nGraph type: "
         if self.is_normalized:
-            ret += "Normalized "
+            ret += u"Normalized "
         if self.is_pcg:
-            ret += "PCG"
+            ret += u"PCG"
         else:
             ret += "CSDF"
         return ret
@@ -46,7 +50,7 @@ class CSDF(Dataflow):
 
     @staticmethod
     def get_dataflow_type():
-        return "CSDF"
+        return u"CSDF"
 
     @property
     def is_sdf(self):
@@ -218,9 +222,9 @@ class CSDF(Dataflow):
         :param : arc tuple (source, destination) or (source, destination, name)
             (default name=lowest unused integer).
         """
-        result = ""
+        result = u""
         for i in range(0, self.get_phase_count(arc[0])):
-            result += str(int(self.get_prod_rate_list(arc)[i])) + ","
+            result += str(int(self.get_prod_rate_list(arc)[i])) + u","
         return result[0:-1]  # del the last comma
 
     def get_cons_str(self, arc):
@@ -232,9 +236,9 @@ class CSDF(Dataflow):
         :param : arc tuple (source, destination) or (source, destination, name)
             (default name=lowest unused integer).
         """
-        result = ""
+        result = u""
         for i in range(0, self.get_phase_count(arc[1])):
-            result += str(int(self.get_cons_rate_list(arc)[i])) + ","
+            result += str(int(self.get_cons_rate_list(arc)[i])) + u","
         return result[0:-1]  # del the last comma
 
     def get_duration_str(self, task):
@@ -245,7 +249,7 @@ class CSDF(Dataflow):
         :rtype : str
         """
         result = str([float(i) for i in self.get_phase_duration_list(task)])[1:-1]
-        return result.replace(" ", "")
+        return result.replace(u" ", u"")
 
     def get_period(self, start_time=False):
         coef_vector = None
@@ -270,15 +274,15 @@ class CSDF(Dataflow):
             source_w = sum(self.get_prod_rate_list(arc)) * self.get_repetition_factor(self.get_source(arc))
             target_w = sum(self.get_cons_rate_list(arc)) * self.get_repetition_factor(self.get_target(arc))
             if source_w != target_w:
-                print arc, source_w, target_w
-                print "source", sum(self.get_prod_rate_list(arc)), self.get_repetition_factor(self.get_source(arc))
-                print "target", sum(self.get_cons_rate_list(arc)), self.get_repetition_factor(self.get_target(arc))
+                print(arc, source_w, target_w)
+                print("source", sum(self.get_prod_rate_list(arc)), self.get_repetition_factor(self.get_source(arc)))
+                print("target", sum(self.get_cons_rate_list(arc)), self.get_repetition_factor(self.get_target(arc)))
                 arc = (41, 0, 0)
                 source_w = sum(self.get_prod_rate_list(arc)) * self.get_repetition_factor(self.get_source(arc))
                 target_w = sum(self.get_cons_rate_list(arc)) * self.get_repetition_factor(self.get_target(arc))
-                print arc, source_w, target_w
-                print "source", sum(self.get_prod_rate_list(arc)), self.get_repetition_factor(self.get_source(arc))
-                print "target", sum(self.get_cons_rate_list(arc)), self.get_repetition_factor(self.get_target(arc))
+                print(arc, source_w, target_w)
+                print("source", sum(self.get_prod_rate_list(arc)), self.get_repetition_factor(self.get_source(arc)))
+                print("target", sum(self.get_cons_rate_list(arc)), self.get_repetition_factor(self.get_target(arc)))
 
                 return False
         return True

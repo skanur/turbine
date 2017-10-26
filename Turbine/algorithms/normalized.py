@@ -1,3 +1,5 @@
+from __future__ import division
+from past.utils import old_div
 from fractions import Fraction
 from math import ceil
 from numpy.random.mtrand import randint
@@ -80,7 +82,7 @@ def get_normalized_vector(dataflow):
             rate = dataflow.get_prod_rate(arc)
         if dataflow.is_csdf:
             rate = sum(dataflow.get_prod_rate_list(arc))
-        zi = lcm_rf / dataflow.get_repetition_factor(dataflow.get_source(arc))
+        zi = old_div(lcm_rf, dataflow.get_repetition_factor(dataflow.get_source(arc)))
         # print lcm_rf, "t"+str(dataflow.get_source(arc)), dataflow.get_repetition_factor(dataflow.get_source(arc))
         # print str(arc[0])+"->"+str(arc[1]), "zi", zi, "rate", rate, "ka", Fraction(numerator=zi, denominator=rate)
         coef_list[arc] = Fraction(numerator=zi, denominator=rate)

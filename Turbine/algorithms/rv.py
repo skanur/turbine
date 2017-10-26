@@ -1,3 +1,6 @@
+from __future__ import print_function
+from __future__ import division
+from past.utils import old_div
 from fractions import Fraction
 import sys
 
@@ -31,20 +34,20 @@ def compute_rep_vect(dataflow):
 
     gcd_v = repetition_vector[dataflow.get_task_list()[0]]
     if dataflow.is_csdf:
-        gcd_v = gcd_v / dataflow.get_phase_count(dataflow.get_task_list()[0])
+        gcd_v = old_div(gcd_v, dataflow.get_phase_count(dataflow.get_task_list()[0]))
 
     for v in dataflow.get_task_list():
         if dataflow.is_sdf:
             gcd_v = gcd(gcd_v, repetition_vector[v])
         if dataflow.is_csdf:
-            gcd_v = gcd(gcd_v, repetition_vector[v] / dataflow.get_phase_count(v))
+            gcd_v = gcd(gcd_v, old_div(repetition_vector[v], dataflow.get_phase_count(v)))
 
     rep_fact_list = []
     for v in dataflow.get_task_list():
         if dataflow.is_sdf:
-            rep_fact = repetition_vector[v] / gcd_v
+            rep_fact = old_div(repetition_vector[v], gcd_v)
         if dataflow.is_csdf:
-            rep_fact = repetition_vector[v] / (dataflow.get_phase_count(v) * gcd_v)
+            rep_fact = old_div(repetition_vector[v], (dataflow.get_phase_count(v) * gcd_v))
         dataflow.set_repetition_factor(v, rep_fact)
         rep_fact_list.append(rep_fact)
     return rep_fact_list
@@ -73,20 +76,20 @@ def check_repetition_vector(dataflow):
 
     repetition_vector = __calc_repetition_vector(dataflow, fractions, rate_period)
 
-    legcd = repetition_vector[dataflow.get_task_list()[0]] / dataflow.get_phase_count(dataflow.get_task_list()[0])
+    legcd = old_div(repetition_vector[dataflow.get_task_list()[0]], dataflow.get_phase_count(dataflow.get_task_list()[0]))
 
     for v in dataflow.get_task_list():
-        legcd = gcd(legcd, repetition_vector[v] / dataflow.get_phase_count(v))
+        legcd = gcd(legcd, old_div(repetition_vector[v], dataflow.get_phase_count(v)))
 
     for v in dataflow.get_task_list():
-        print"%s \t: %d\tx %d \t = %d VS %d" % (dataflow.get_task_name(v),
-                                                repetition_vector[v] / dataflow.get_phase_count(v),
+        print("%s \t: %d\tx %d \t = %d VS %d" % (dataflow.get_task_name(v),
+                                                old_div(repetition_vector[v], dataflow.get_phase_count(v)),
                                                 dataflow.get_phase_count(v), repetition_vector[v],
-                                                dataflow.get_repetition_factor(v)),
-        if (dataflow.get_repetition_factor(v)) != repetition_vector[v] / (dataflow.get_phase_count(v) * legcd):
-            print "error"
+                                                dataflow.get_repetition_factor(v)), end=' ')
+        if (dataflow.get_repetition_factor(v)) != old_div(repetition_vector[v], (dataflow.get_phase_count(v) * legcd)):
+            print("error")
         else:
-            print "ok"
+            print("ok")
     return True
 
 
@@ -111,15 +114,15 @@ def __calc_fractions_connected_actors(dataflow, fractions, a, rate_period):
             rate_a = dataflow.get_prod_rate(c) * rate_period
             rate_b = dataflow.get_cons_rate(c) * rate_period
         if dataflow.is_csdf:
-            rate_a = sum(dataflow.get_prod_rate_list(c)) * (rate_period / dataflow.get_phase_count(src))
-            rate_b = sum(dataflow.get_cons_rate_list(c)) * (rate_period / dataflow.get_phase_count(dest))
+            rate_a = sum(dataflow.get_prod_rate_list(c)) * (old_div(rate_period, dataflow.get_phase_count(src)))
+            rate_b = sum(dataflow.get_cons_rate_list(c)) * (old_div(rate_period, dataflow.get_phase_count(dest)))
 
         if dest == a:
             tmp = rate_b
             rate_b = rate_a
             rate_a = tmp
         if rate_a == 0 or rate_b == 0:
-            print "rateA == 0 || rateB == 0"
+            print("rateA == 0 || rateB == 0")
             return False
 
         ratio_ab = Fraction(rate_a, rate_b)
@@ -152,7 +155,7 @@ def __calc_repetition_vector(g, fractions, rate_period):
         raise ValueError
 
     for v in g.get_task_list():
-        repetition_vector[v] = (fractions[v].numerator * l) / fractions[v].denominator
+        repetition_vector[v] = old_div((fractions[v].numerator * l), fractions[v].denominator)
 
     legcd = repetition_vector[g.get_task_list()[0]]
 
@@ -163,7 +166,7 @@ def __calc_repetition_vector(g, fractions, rate_period):
         raise ValueError
 
     for v in g.get_task_list():
-        repetition_vector[v] = repetition_vector[v] / legcd
+        repetition_vector[v] = old_div(repetition_vector[v], legcd)
 
     for v in g.get_task_list():
         repetition_vector[v] = repetition_vector[v] * rate_period

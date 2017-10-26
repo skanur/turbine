@@ -1,3 +1,4 @@
+from __future__ import print_function
 from Turbine.generation.generate import generate
 from Turbine.param.parameters import Parameters
 
@@ -18,16 +19,16 @@ SDFG = generate("Test_of_SDFG", c_param)
 
 # Iterate on tasks
 for task in SDFG.get_task_list():
-    print task, SDFG.get_task_name(task)
+    print(task, SDFG.get_task_name(task))
 
 # Iterate on arcs:
 for arc in SDFG.get_arc_list():
-    print arc, SDFG.get_arc_name(arc)
+    print(arc, SDFG.get_arc_name(arc))
 
 # get_arc_list method can do much more
 task_t0 = SDFG.get_task_list()[0]  # The first task
 for arc in SDFG.get_arc_list(source=task_t0):
-    print arc  # Display every output arcs of the task
+    print(arc)  # Display every output arcs of the task
 
 for arc in SDFG.get_arc_list(target=task_t0):
-    print arc  # Display every input arcs of the task
+    print(arc)  # Display every input arcs of the task

@@ -1,10 +1,11 @@
 """
 Example of how to generate a Synchronous Dataflow Graph
 """
+from __future__ import print_function
 from Turbine.generation.generate import generate
 from Turbine.param.parameters import Parameters
 
-print "###### Setup the SDF generation #####"
+print("###### Setup the SDF generation #####")
 c_param = Parameters()
 
 # Set the SDF type for the generation
@@ -20,7 +21,7 @@ c_param.set_max_task_degree(2)
 # Number of task in the dataflow
 c_param.set_nb_task(10)
 
-print "###### Generate SDF dataflow ########"
+print("###### Generate SDF dataflow ########")
 SDFG = generate("Test_of_SDFG", c_param)
-print SDFG
-print "Cyclic graph:", SDFG.is_cyclic
+print(SDFG)
+print("Cyclic graph:", SDFG.is_cyclic)

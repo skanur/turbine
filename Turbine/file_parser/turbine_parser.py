@@ -1,4 +1,9 @@
-import StringIO
+from __future__ import unicode_literals
+from future import standard_library
+standard_library.install_aliases()
+# from builtins import str
+from builtins import range
+import io
 import sys
 
 from Turbine.graph_classe.csdf import CSDF
@@ -7,28 +12,28 @@ from Turbine.graph_classe.sdf import SDF
 
 
 def write_tur(dataflow):
-    output = StringIO.StringIO()
+    output = io.StringIO()
 
-    output.write("#Graph_name\n")
-    output.write(str(dataflow.get_name()) + " " + str(dataflow.get_dataflow_type()) + "\n")
+    output.write(u"#Graph_name\n")
+    output.write(dataflow.get_name() + u" " + dataflow.get_dataflow_type() + u"\n")
 
-    output.write("#Number_of_tasks number_of_arcs\n")
-    output.write(str(dataflow.get_task_count()) + " " + str(dataflow.get_arc_count()) + "\n")
+    output.write(u"#Number_of_tasks number_of_arcs\n")
+    output.write(str(dataflow.get_task_count()) + u" " + str(dataflow.get_arc_count()) + u"\n")
 
-    output.write("#TASKS\n")
-    output.write("#Id repetition_factor phase_duration\n")
+    output.write(u"#TASKS\n")
+    output.write(u"#Id repetition_factor phase_duration\n")
     for task in dataflow.get_task_list():
-        output.write(str(task) + " " + str(dataflow.get_repetition_factor(task)) + " ")
-        output.write(dataflow.get_duration_str(task) + "\n")
+        output.write(str(task) + u" " + str(dataflow.get_repetition_factor(task)) + u" ")
+        output.write(dataflow.get_duration_str(task) + u"\n")
 
-    output.write("#ARCS\n")
-    output.write("#(source,target) initial_marking production_vector consumption_vector\n")
+    output.write(u"#ARCS\n")
+    output.write(u"#(source,target) initial_marking production_vector consumption_vector\n")
     for arc in dataflow.get_arc_list():
-        str_arc = str(str(arc).split(",")[0]) + "," + str(str(arc).split(",")[1]) + ")"
-        output.write(str_arc.replace(" ", "") + " ")
-        output.write(str(int(dataflow.get_initial_marking(arc))) + " ")
-        output.write(dataflow.get_prod_str(arc) + " ")
-        output.write(dataflow.get_cons_str(arc) + "\n")
+        str_arc = str(arc).split(",")[0] + u"," + str(arc).split(",")[1] + u")"
+        output.write(str_arc.replace(u" ", u"") + u" ")
+        output.write(str(int(dataflow.get_initial_marking(arc))) + u" ")
+        output.write(dataflow.get_prod_str(arc) + u" ")
+        output.write(dataflow.get_cons_str(arc) + u"\n")
     r = output.getvalue()
     output.close()
     return r
@@ -54,7 +59,7 @@ def read_tur_file(filename):
         dataflow = PCG(name)
 
     task_nb, arc_nb = __readline(open_file).split(" ")
-    for i in xrange(int(task_nb)):
+    for i in range(int(task_nb)):
         line = __readline(open_file).replace("\n", "")
         task_name, repetition_factor, str_duration = line.split(" ")
         task = dataflow.add_task(task_name)
@@ -72,7 +77,7 @@ def read_tur_file(filename):
             dataflow.set_phase_count(task, len(duration_list))
             dataflow.set_phase_duration_list(task, duration_list)
 
-    for i in xrange(int(arc_nb)):
+    for i in range(int(arc_nb)):
         line = __readline(open_file).replace("\n", "")
         str_arc, str_m0, str_prod, str_cons = line.split(" ")
         source = dataflow.get_task_by_name(str_arc.split(",")[0][1:])

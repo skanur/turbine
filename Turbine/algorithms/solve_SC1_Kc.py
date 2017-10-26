@@ -1,3 +1,7 @@
+from builtins import str
+from builtins import range
+from builtins import object
+from future.utils import native_str
 import logging
 
 try:
@@ -6,7 +10,7 @@ except ImportError:
     from glpk import *
 
 
-class SolverSC1Kc:
+class SolverSC1Kc(object):
     """Solve the initial marking under maximal period constraint. The period constraint is an upper bound.
     
     Small value of the period may not work.
@@ -98,7 +102,7 @@ class SolverSC1Kc:
                 phase_count = self.dataflow.get_phase_count(task)
             if self.dataflow.is_pcg:
                 phase_count += self.dataflow.get_ini_phase_count(task)
-            for i in xrange(phase_count):
+            for i in range(phase_count):
                 self.__add_col_v(col, str(task) + "/" + str(i))
                 col += 1
 
@@ -163,13 +167,13 @@ class SolverSC1Kc:
                 step = self.dataflow.get_gcd(arc)
 
                 pred_prod = 0
-                for source_phase in xrange(range_source):  # source/prod/out
+                for source_phase in range(range_source):  # source/prod/out
                     if source_phase > 0:
                         pred_prod += prod_list[source_phase - 1]
 
                     pred_cons = 0
                     cons = 0
-                    for target_phase in xrange(range_target):  # target/cons/in
+                    for target_phase in range(range_target):  # target/cons/in
                         cons += cons_list[target_phase]
                         if target_phase > 0:
                             pred_cons += cons_list[target_phase - 1]
@@ -208,8 +212,8 @@ class SolverSC1Kc:
             for arc in self.dataflow.get_arc_list():
                 source = self.dataflow.get_source(arc)
                 target = self.dataflow.get_target(arc)
-                for phase_s in xrange(self.__get_range_phases(source)):
-                    for phase_t in xrange(self.__get_range_phases(target)):
+                for phase_s in range(self.__get_range_phases(source)):
+                    for phase_t in range(self.__get_range_phases(target)):
                         logging.debug(str(arc) + " V" + str(source) + "/" + str(phase_s) + ": " +
                                       str(glp_get_col_prim(self.prob, self.colV[str(source) + "/" + str(phase_s)])) +
                                       " V" + str(target) + "/" + str(phase_t) + ": " +
@@ -244,14 +248,14 @@ class SolverSC1Kc:
 
     # Add a variable lamda
     def __add_col_v(self, col, name):
-        glp_set_col_name(self.prob, col, name)
+        glp_set_col_name(self.prob, col, native_str(name))
         glp_set_col_bnds(self.prob, col, GLP_FR, 0, 0)
         glp_set_obj_coef(self.prob, col, 0.0)
         self.colV[name] = col
 
     # Add a variable M0
     def __add_col_m0(self, col, name, arc):
-        glp_set_col_name(self.prob, col, name)
+        glp_set_col_name(self.prob, col, native_str(name))
         glp_set_col_bnds(self.prob, col, GLP_LO, 0, 0)
         glp_set_obj_coef(self.prob, col, 1.0)
         self.col_m0[arc] = col
@@ -259,7 +263,7 @@ class SolverSC1Kc:
     # Add a variable FM0
     def __add_col_fm0(self, col, name, arc):
         glp_set_col_kind(self.prob, col, GLP_IV)
-        glp_set_col_name(self.prob, col, name)
+        glp_set_col_name(self.prob, col, native_str(name))
         glp_set_col_bnds(self.prob, col, GLP_LO, 0, 0)
         glp_set_obj_coef(self.prob, col, 0.0)
         self.col_fm0[arc] = col
@@ -283,7 +287,7 @@ class SolverSC1Kc:
         self.k += 1
 
         glp_set_row_bnds(self.prob, row, GLP_LO, w + 1.0, 0.0)  # W1+1 cause there is no strict bound with GLPK
-        glp_set_row_name(self.prob, row, "r_" + str(row))
+        glp_set_row_name(self.prob, row, native_str("r_" + str(row)))
 
     # Add a constraint: FM0*step = M0
     def __add_frow(self, row, arc, step):
@@ -298,7 +302,7 @@ class SolverSC1Kc:
         self.k += 1
 
         glp_set_row_bnds(self.prob, row, GLP_FX, 0.0, 0.0)
-        glp_set_row_name(self.prob, row, "step" + str(arc))
+        glp_set_row_name(self.prob, row, native_str("step" + str(arc)))
 
     def __get_range_phases(self, task):
         if self.dataflow.is_sdf:

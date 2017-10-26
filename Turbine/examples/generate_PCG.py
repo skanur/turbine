@@ -1,10 +1,11 @@
 """
 Example of how to generate a Phased Computation Graph
 """
+from __future__ import print_function
 from Turbine.generation.generate import generate
 from Turbine.param.parameters import Parameters
 
-print "###### Setup the PCG generation #####"
+print("###### Setup the PCG generation #####")
 c_param = Parameters()
 
 # Set the PCG type for the generation
@@ -25,7 +26,7 @@ c_param.set_max_task_degree(3)
 # Number of task in the dataflow
 c_param.set_nb_task(100)
 
-print "###### Generate PCG dataflow ########"
+print("###### Generate PCG dataflow ########")
 PCG = generate("Test_of_SDFG", c_param)
 PCG.compute_repetition_vector()
-print PCG
+print(PCG)

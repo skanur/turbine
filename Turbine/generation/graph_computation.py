@@ -1,3 +1,7 @@
+from __future__ import division
+from builtins import str
+from builtins import range
+from past.utils import old_div
 from random import *
 import logging
 
@@ -41,7 +45,7 @@ def __generate_connex_graph(dataflow, c_param):
     task_degree = [0] * c_param.get_nb_task()
     potential_emergency_task = set()
     emergency_task = set()
-    for task in xrange(c_param.get_nb_task()):  # Compute degree wanted for each task
+    for task in range(c_param.get_nb_task()):  # Compute degree wanted for each task
         task_degree[task] = randint(c_param.get_min_task_degree(), c_param.get_max_task_degree())
         if task_degree[task] < c_param.get_max_task_degree():
             potential_emergency_task.add(task)
@@ -49,7 +53,7 @@ def __generate_connex_graph(dataflow, c_param):
     task = dataflow.add_task()
     __try_add_emergency_task(task, potential_emergency_task, emergency_task)
     task_degree_non_null.add(task)
-    for i in xrange(1, c_param.get_nb_task()):
+    for i in range(1, c_param.get_nb_task()):
         try:
             random_task = sample(task_degree_non_null, 1)[0]
         except ValueError:
@@ -98,7 +102,7 @@ def __generate_arcs(dataflow, c_param, task_degree):
                 task_degree_non_null.discard(rm_task)
 
         # Add arc on potential task
-        for _ in xrange(task_degree[task]):
+        for _ in range(task_degree[task]):
             if len(task_degree_non_null) > 0:
                 random_task = sample(task_degree_non_null, 1)[0]
                 arc_created = False
@@ -138,15 +142,15 @@ def __generate_connex_dag(dataflow, c_param):
     logging.info("Generate connex directed acyclic graph")
     # First generate a path graph with x nodes and x-1 arcs
     if c_param.get_nb_task() < 10:
-        path_nodes_nb = randint(2, int(c_param.get_nb_task() / 2))
+        path_nodes_nb = randint(2, int(old_div(c_param.get_nb_task(), 2)))
     else:
-        path_nodes_nb = int(c_param.get_nb_task() / randint(2, int(c_param.get_nb_task() / 2)))
+        path_nodes_nb = int(old_div(c_param.get_nb_task(), randint(2, int(old_div(c_param.get_nb_task(), 2)))))
 
     # Generate random degree for each task and emergency task in case of low average degree
     task_degree = []
     potential_emergency_task = set()
     emergency_task = set()
-    for task in xrange(c_param.get_nb_task()):  # Compute degree wanted for each task
+    for task in range(c_param.get_nb_task()):  # Compute degree wanted for each task
         task_degree.append(randint(c_param.get_min_task_degree(), c_param.get_max_task_degree()))
         if task_degree[task] < c_param.get_max_task_degree():
             potential_emergency_task.add(task)
@@ -162,7 +166,7 @@ def __generate_connex_dag(dataflow, c_param):
     task_degree_non_null.add(task)
     __try_add_emergency_task(task, potential_emergency_task, emergency_task)
     task_rank[task] = 0
-    for i in xrange(1, path_nodes_nb):
+    for i in range(1, path_nodes_nb):
         next_task = dataflow.add_task()
         task_to_rm[next_task] = [next_task]
 
@@ -184,7 +188,7 @@ def __generate_connex_dag(dataflow, c_param):
         task_rank[task] = i
 
     if c_param.get_nb_task() - path_nodes_nb > 0:
-        for i in xrange(c_param.get_nb_task() - path_nodes_nb):
+        for i in range(c_param.get_nb_task() - path_nodes_nb):
             path_rank = randint(0, path_nodes_nb - 1)
             task = dataflow.add_task()
             task_to_rm[task] = [task]
@@ -233,7 +237,7 @@ def __generate_arcs_dag(dataflow, c_param, task_rank, task_degree, task_to_rm):
                 task_degree_non_null.discard(rm_task)
 
             # Add arc on potential task
-            for i in xrange(task_degree[task]):
+            for i in range(task_degree[task]):
                 if task_degree_non_null:
                     random_task = __add_random_dag_arc(dataflow, task_degree_non_null, task, task_rank)[1]
                     if task_rank[task] == task_rank[random_task]:

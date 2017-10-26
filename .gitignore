@@ -54,3 +54,6 @@ docs/_build/
 
 # dependencies
 python-glpk-0.4.43
+
+# backup files
+**.py.bak

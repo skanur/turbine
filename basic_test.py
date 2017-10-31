@@ -7,6 +7,8 @@ from Turbine.file_parser.sdf3_parser import write_sdf3_file, read_sdf3_file
 from Turbine.file_parser.turbine_parser import write_tur_file, read_tur_file
 from Turbine.param.parameters import Parameters
 
+import networkx as nx
+
 
 def try_function(function, args):
     try:
@@ -32,6 +34,13 @@ def try_property(prop):
 print("Starting basic test !")
 
 print("")
+
+## random graph generation
+c_param = Parameters()
+c_param.set_dataflow_type("SDF")
+graph = nx.complete_graph(10)
+try_function(generate, ("Test_random_sdfg", c_param))
+print("Generation of SDFG from complete graph", end=' ')
 
 print("Acyclic SDF generation", end=' ')
 c_param = Parameters()
@@ -164,6 +173,7 @@ print("SC1_k on a PCG", end=' ')
 # try_function(PCG.compute_initial_marking, ("SC1_MIP", False, None, 1))
 # print "Compute symbolic execution on a PCG",
 try_property(PCG.is_dead_lock)
+
 
 try:
     os.remove("gurobi.log")

@@ -34,7 +34,7 @@ class PyTest(test):
         exit(errcode)
 
 required = [
-    'networkx >= 1.11',
+    'networkx >= 1.11, < 2.0',
     'swiglpk >= 1.4',
     'future',
     'numpy'

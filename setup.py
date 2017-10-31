@@ -36,6 +36,7 @@ class PyTest(test):
 required = [
     'networkx >= 1.11',
     'swiglpk >= 1.4',
+    'future',
     'numpy'
 ]
 

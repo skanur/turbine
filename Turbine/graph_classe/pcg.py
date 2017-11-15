@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 # from builtins import str
 from builtins import range
-from fractions import gcd
+from math import gcd
 
 from Turbine.graph_classe.csdf import CSDF
 from functools import reduce

@@ -6,7 +6,7 @@ from builtins import str
 from builtins import range
 from builtins import object
 from past.utils import old_div
-from fractions import gcd
+from math import gcd
 import logging
 
 try:

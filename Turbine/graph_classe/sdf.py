@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 # from builtins import str
-from fractions import gcd
+from math import gcd
 from Turbine.graph_classe.dataflow import Dataflow
 from Turbine.algorithms.period_computation import ComputePeriod
 

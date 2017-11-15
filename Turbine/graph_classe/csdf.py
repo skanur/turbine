@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 from __future__ import print_function
 # from builtins import str
 from builtins import range
-from fractions import gcd
+from math import gcd
 
 from Turbine.graph_classe.dataflow import Dataflow
 from Turbine.algorithms.period_computation import ComputePeriod

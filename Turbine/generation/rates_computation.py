@@ -3,7 +3,7 @@ from builtins import zip
 from builtins import str
 from builtins import range
 from past.utils import old_div
-from fractions import gcd
+from math import gcd
 from Turbine.calc.lcm import lcm
 from random import Random
 import logging

@@ -2,18 +2,19 @@ from __future__ import division
 from builtins import str
 from builtins import range
 from past.utils import old_div
-from random import Random
 import logging
 
 from Turbine.graph_classe.csdf import CSDF
 from Turbine.graph_classe.pcg import PCG
 from Turbine.graph_classe.sdf import SDF
 
+import random as rand
+
 
 ########################################################################
 #                           generate graph                             #
 ########################################################################
-def generate_dataflow(dataflow_name, c_param, nx_graph=None, seed=None):
+def generate_dataflow(dataflow_name, c_param, nx_graph=None):
     """Step 1
     """
     if c_param.get_dataflow_type() == "SDF":
@@ -25,12 +26,12 @@ def generate_dataflow(dataflow_name, c_param, nx_graph=None, seed=None):
     if nx_graph is None:
         if c_param.is_acyclic():
             # Generate a connected acyclic graph
-            task_rank, task_degree, task_to_rm = __generate_connex_dag(dataflow, c_param, seed)
+            task_rank, task_degree, task_to_rm = __generate_connex_dag(dataflow, c_param)
             # Add arcs such as the graph stay acyclic
-            __generate_arcs_dag(dataflow, c_param, task_rank, task_degree, task_to_rm, seed)
+            __generate_arcs_dag(dataflow, c_param, task_rank, task_degree, task_to_rm)
         else:
-            task_degree = __generate_connex_graph(dataflow, c_param, seed)  # Generate simple connected graph
-            __generate_arcs(dataflow, c_param, task_degree, seed)  # Add arcs
+            task_degree = __generate_connex_graph(dataflow, c_param)  # Generate simple connected graph
+            __generate_arcs(dataflow, c_param, task_degree)  # Add arcs
         return dataflow
     else:
         for node in nx_graph.nodes_iter():
@@ -40,9 +41,8 @@ def generate_dataflow(dataflow_name, c_param, nx_graph=None, seed=None):
         return dataflow
 
 
-def __generate_connex_graph(dataflow, c_param, seed):
+def __generate_connex_graph(dataflow, c_param):
     logging.info("Generate connex graph")
-    rand = Random(seed)
     task_degree = [0] * c_param.get_nb_task()
     potential_emergency_task = set()
     emergency_task = set()
@@ -77,10 +77,9 @@ def __generate_connex_graph(dataflow, c_param, seed):
     return task_degree
 
 
-def __generate_arcs(dataflow, c_param, task_degree, seed):
+def __generate_arcs(dataflow, c_param, task_degree):
     logging.info("Generate more arcs")
 
-    rand = Random(seed)
     nb_tot_arcs = dataflow.get_task_count() - 1 + sum(task_degree)
     arc_count = dataflow.get_task_count() - 1
     task_degree_non_null = set()  # Task which need more arcs
@@ -140,9 +139,8 @@ def __generate_arcs(dataflow, c_param, task_degree, seed):
         task_degree_non_null.discard(task)
 
 
-def __generate_connex_dag(dataflow, c_param, seed):
+def __generate_connex_dag(dataflow, c_param):
     logging.info("Generate connex directed acyclic graph")
-    rand = Random(seed)
     # First generate a path graph with x nodes and x-1 arcs
     if c_param.get_nb_task() < 10:
         path_nodes_nb = rand.randint(2, int(old_div(c_param.get_nb_task(), 2)))
@@ -199,9 +197,9 @@ def __generate_connex_dag(dataflow, c_param, seed):
             if dataflow.get_task_count() > 1000 and dataflow.get_task_count() % 1000 == 0:
                 logging.info(str(dataflow.get_task_count()) + "/" + str(c_param.get_nb_task()) + " tasks generate.")
             task_rank[task] = path_rank
-            arc_added, random_task = __add_random_dag_arc(dataflow, task_degree_non_null, task, task_rank, seed)
+            arc_added, random_task = __add_random_dag_arc(dataflow, task_degree_non_null, task, task_rank)
             if not arc_added:
-                arc_added, random_task = __add_random_dag_arc(dataflow, emergency_task, task, task_rank, seed)
+                arc_added, random_task = __add_random_dag_arc(dataflow, emergency_task, task, task_rank)
                 if not arc_added:
                     raise Exception("No emergency task, report it to the dev !")
                 emergency_task.remove(random_task)
@@ -222,7 +220,7 @@ def __generate_connex_dag(dataflow, c_param, seed):
     return task_rank, task_degree, task_to_rm
 
 
-def __generate_arcs_dag(dataflow, c_param, task_rank, task_degree, task_to_rm, seed):
+def __generate_arcs_dag(dataflow, c_param, task_rank, task_degree, task_to_rm):
     logging.info("Generate more arcs")
     nb_tot_arcs = dataflow.get_task_count() - 1
     arc_count = dataflow.get_task_count() - 1
@@ -242,7 +240,7 @@ def __generate_arcs_dag(dataflow, c_param, task_rank, task_degree, task_to_rm, s
             # Add arc on potential task
             for i in range(task_degree[task]):
                 if task_degree_non_null:
-                    random_task = __add_random_dag_arc(dataflow, task_degree_non_null, task, task_rank, seed)[1]
+                    random_task = __add_random_dag_arc(dataflow, task_degree_non_null, task, task_rank)[1]
                     if task_rank[task] == task_rank[random_task]:
                         task_to_rm[task].append(random_task)
                         task_to_rm[random_task].append(task)
@@ -265,8 +263,7 @@ def __generate_arcs_dag(dataflow, c_param, task_rank, task_degree, task_to_rm, s
             task_degree[task] = 0
 
 
-def __add_random_dag_arc(dataflow, task_degree_non_null, task, task_rank, seed):
-    rand = Random(seed)
+def __add_random_dag_arc(dataflow, task_degree_non_null, task, task_rank):
     try:
         random_task = rand.sample(task_degree_non_null, 1)[0]
     except ValueError:

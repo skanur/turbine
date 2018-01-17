@@ -5,14 +5,15 @@ from builtins import range
 from past.utils import old_div
 from math import gcd
 from Turbine.calc.lcm import lcm
-from random import Random
-import logging
-
-import numpy
 from functools import reduce
 
+import logging
+import numpy as np
 
-def constrained_sum_sample_pos(n, total, seed):
+import random as rand
+
+
+def constrained_sum_sample_pos(n, total):
     """Return a randomly chosen list of n positive integers summing to total.
     Each such list is equally likely to occur.
 
@@ -21,7 +22,6 @@ def constrained_sum_sample_pos(n, total, seed):
     n : The size of the random list return.
     total : The sum of the list return
     """
-    rand = Random(seed)
     if total < n:
         x = [0] * (n - total) + [1] * total
         rand.shuffle(x)
@@ -35,30 +35,28 @@ def constrained_sum_sample_pos(n, total, seed):
 ########################################################################
 #                           generate weight                            #
 ########################################################################
-def generate_rates(dataflow, c_param, seed):
+def generate_rates(dataflow, c_param):
     """The weight generation step of the generator (step 2)
     """
-    __generate_rv(dataflow, c_param, seed)  # generate the repetition vector
-    __generate_rates(dataflow, c_param, seed)  # generate weight vectors
+    __generate_rv(dataflow, c_param)  # generate the repetition vector
+    __generate_rates(dataflow, c_param)  # generate weight vectors
     if dataflow.is_pcg:
-        __generate_threshold_lists(dataflow, seed)
-        __generate_initial_phase_lists(dataflow, c_param, seed)  # generate initial vectors
+        __generate_threshold_lists(dataflow)
+        __generate_initial_phase_lists(dataflow, c_param)  # generate initial vectors
 
 
-def __generate_rv(dataflow, c_param, seed):
+def __generate_rv(dataflow, c_param):
     """Generate the vector of repetition factor RV with gcd(RV) = 1 and SUM(RV)=sumRV
     """
     logging.info("Generate repetition vector")
-    rand = Random(seed)
-    numpy.random.seed(seed)
     sum_rv = c_param.get_average_repetition_factor() * dataflow.get_task_count()  # Sum of the repetition vector
 
     gcd_value = 0
 
     n = dataflow.get_task_count()
-    div = numpy.random.exponential(0.25)
+    div = np.random.exponential(0.25)
     div = n + int(div * n)
-    rv_list = numpy.random.multinomial(sum_rv, old_div(numpy.ones(n), div))
+    rv_list = np.random.multinomial(sum_rv, old_div(np.ones(n), div))
     __get_non_zero_list(rv_list)
 
     # Modify the two last integers of the list to get a gcd equal to 1
@@ -74,12 +72,10 @@ def __generate_rv(dataflow, c_param, seed):
     return
 
 
-def __generate_rates(dataflow, c_param, seed):
+def __generate_rates(dataflow, c_param):
     """Generate weights of the dataflow.
     """
     logging.info("Generate task wight")
-    rand = Random(seed)
-    numpy.random.seed(seed)
     k = 0
 
     lcm_value = 1
@@ -104,14 +100,14 @@ def __generate_rates(dataflow, c_param, seed):
         if dataflow.is_csdf:
             phase_count = rand.randint(c_param.get_min_phase_count(), c_param.get_max_phase_count())
             phase_duration_list = constrained_sum_sample_pos(
-                phase_count, rand.randint(1, c_param.get_average_time() * phase_count * 2 - 1), seed)
+                phase_count, rand.randint(1, c_param.get_average_time() * phase_count * 2 - 1))
             __get_non_zero_list(phase_duration_list)
 
             dataflow.set_phase_count(task, phase_count)
             dataflow.set_phase_duration_list(task, phase_duration_list)
 
             for arc in dataflow.get_arc_list(source=task):
-                prod_list = constrained_sum_sample_pos(phase_count, zi, seed)
+                prod_list = constrained_sum_sample_pos(phase_count, zi)
                 dataflow.set_prod_rate_list(arc, prod_list)
                 if sum(dataflow.get_prod_rate_list(arc)) != zi:
                     logging.fatal("constrained_sum_sample_pos return wrong list, "
@@ -120,7 +116,7 @@ def __generate_rates(dataflow, c_param, seed):
                                        "it's generally cause by too large number.")
 
             for arc in dataflow.get_arc_list(target=task):
-                cons_list = constrained_sum_sample_pos(phase_count, zi, seed)
+                cons_list = constrained_sum_sample_pos(phase_count, zi)
                 dataflow.set_cons_rate_list(arc, cons_list)
                 if sum(dataflow.get_cons_rate_list(arc)) != zi:
                     raise RuntimeError("__generate_phase_lists constrained_sum_sample_pos return wrong list, "
@@ -131,18 +127,17 @@ def __generate_rates(dataflow, c_param, seed):
         k += 1
 
 
-def __generate_threshold_lists(dataflow, seed):
+def __generate_threshold_lists(dataflow):
     for arc in dataflow.get_arc_list():
         phase_count = dataflow.get_phase_count(dataflow.get_target(arc))
         zi = sum(dataflow.get_cons_rate_list(arc))
-        threshold_list = constrained_sum_sample_pos(phase_count, zi, seed)
+        threshold_list = constrained_sum_sample_pos(phase_count, zi)
         dataflow.set_threshold_list(arc, threshold_list)
 
 
-def __generate_initial_phase_lists(dataflow, c_param, seed):
+def __generate_initial_phase_lists(dataflow, c_param):
     """Generate initial weights of the dataflow.
     """
-    rand = Random(seed)
     if c_param.get_max_phase_count_ini() == 0:
         for task in dataflow.get_task_list():
             dataflow.set_ini_phase_count(task, 0)
@@ -165,7 +160,7 @@ def __generate_initial_phase_lists(dataflow, c_param, seed):
                 dataflow.set_ini_cons_rate_list(arc, [])
             continue
         phase_duration_ini_list = constrained_sum_sample_pos(
-            phase_count_init, rand.randint(1, c_param.get_average_time_ini() * phase_count_init * 2 - 1), seed)
+            phase_count_init, rand.randint(1, c_param.get_average_time_ini() * phase_count_init * 2 - 1))
         __get_non_zero_list(phase_duration_ini_list)
         dataflow.set_ini_phase_count(task, phase_count_init)
         dataflow.set_ini_phase_duration_list(task, phase_duration_ini_list)
@@ -174,14 +169,14 @@ def __generate_initial_phase_lists(dataflow, c_param, seed):
         ini_zi = rand.randint(1, c_param.get_average_weight_ini() * phase_count_init - 1)
 
         for arc in dataflow.get_arc_list(source=task):
-            ini_prod_list = constrained_sum_sample_pos(phase_count_init, ini_zi, seed)
+            ini_prod_list = constrained_sum_sample_pos(phase_count_init, ini_zi)
             dataflow.set_ini_prod_rate_list(arc, ini_prod_list)
 
         for arc in dataflow.get_arc_list(target=task):
-            cons_ini_list = constrained_sum_sample_pos(phase_count_init, ini_zi, seed)
+            cons_ini_list = constrained_sum_sample_pos(phase_count_init, ini_zi)
             dataflow.set_ini_cons_rate_list(arc, cons_ini_list)
             if dataflow.is_pcg:
-                cons_ini_threshold_list = constrained_sum_sample_pos(phase_count_init, ini_zi, seed)
+                cons_ini_threshold_list = constrained_sum_sample_pos(phase_count_init, ini_zi)
                 dataflow.set_ini_threshold_list(arc, cons_ini_threshold_list)
 
         if dataflow.get_task_count() > 1000 and k % 1000 == 0:

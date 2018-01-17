@@ -50,6 +50,7 @@ def __generate_rv(dataflow, c_param, seed):
     """
     logging.info("Generate repetition vector")
     rand = Random(seed)
+    numpy.random.seed(seed)
     sum_rv = c_param.get_average_repetition_factor() * dataflow.get_task_count()  # Sum of the repetition vector
 
     gcd_value = 0
@@ -78,6 +79,7 @@ def __generate_rates(dataflow, c_param, seed):
     """
     logging.info("Generate task wight")
     rand = Random(seed)
+    numpy.random.seed(seed)
     k = 0
 
     lcm_value = 1

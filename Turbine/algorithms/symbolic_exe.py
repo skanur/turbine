@@ -32,6 +32,8 @@ class SymbolicExe(object):
 
     # Execute the symbolic execution until the number of iteration reach self.ite
     def execute(self, get_start_time=False, nb_ite=1):
+        logger = logging.getLogger(__name__)
+
         self.__raz()
         # First we test case of obvious dead lock
         if self.dataflow.is_cyclic and self.dataflow.get_tot_initial_marking() == 0:
@@ -60,11 +62,11 @@ class SymbolicExe(object):
             if min_rt_exe == 0:
                 min_rt_exe = 1
             if old_div(max_rt_exe, min_rt_exe) > self.__RT_MAX_RATIO:
-                logging.info("Infinite loop detected, some part of the graph is dead lock !")
+                logger.info("Infinite loop detected, some part of the graph is dead lock !")
                 return -1
             # 1 - Choose which task can be execute
             task_execute = len(self.currently_executed)
-            logging.debug("iteration: " + str(i))
+            logger.debug("iteration: " + str(i))
             for task in self.dataflow.get_task_list():
                 if task not in self.currently_executed and self.__is_executable(task):
                     executed_task[task] = True
@@ -80,10 +82,10 @@ class SymbolicExe(object):
                         # If the task has been executed enought then don't execute it
                         executed_task[task] = False
                         task_execute -= 1
-                    if logging.getLogger().getEffectiveLevel() == logging.DEBUG:
-                        logging.debug("execute task: " + str(task))
+                    if logger.getLogger().getEffectiveLevel() == logging.DEBUG:
+                        logger.debug("execute task: " + str(task))
                         for arc in self.dataflow.get_arc_list(target=task):
-                            logging.debug("\tInput arc: " + str(arc) + " M0=" + str(self.M0[arc]))
+                            logger.debug("\tInput arc: " + str(arc) + " M0=" + str(self.M0[arc]))
                     task_execute += 1
 
             # print task_execute
@@ -97,7 +99,7 @@ class SymbolicExe(object):
                             self.start_time[(task, self.currentPhase[task])].append(self.time_tick)
                     num_task_exe[task] += 1  # Increase the number of exe of this task
                     if self.__task_start_exe(task) == -1:  # If the execution went wrong stop the process
-                        logging.error("Negative bds, this should never occur...")
+                        logger.error("Negative bds, this should never occur...")
                         return -1
                     self.currently_executed.append(task)
                     self.tick_left[task] = self.__get_duration(task)
@@ -133,11 +135,11 @@ class SymbolicExe(object):
                     if num_task_exe[task] >= max_exe:
                         num_exe += 1
                 if num_exe == self.dataflow.get_task_count():
-                    logging.debug("number of exe: " + str(num_task_exe))
+                    logger.debug("number of exe: " + str(num_task_exe))
                     for task in self.dataflow.get_task_list():
                         num_task_exe[task] = 0
                     step_two = True
-                    logging.debug("PHASE TWO ENGAGE !!! fasten your seatbelt.")
+                    logger.debug("PHASE TWO ENGAGE !!! fasten your seatbelt.")
 
             # Step Two over ?
             if step_two:
@@ -157,12 +159,12 @@ class SymbolicExe(object):
 
             # If nothing append the initial marking is wrong:-(
             if task_execute == 0:
-                logging.debug("No task executed:-/, iteration: " + str(i) + "Arcs exe: " + str(
+                logger.debug("No task executed:-/, iteration: " + str(i) + "Arcs exe: " + str(
                     self.arcExe) + "number of exe: " + str(num_task_exe))
                 return -1
             i += 1
         fin = time.time()
-        logging.info("Symbolic execution succeed in " + str(fin - debut) + "s, with " + str(i) + " iterations")
+        logger.info("Symbolic execution succeed in " + str(fin - debut) + "s, with " + str(i) + " iterations")
         if get_start_time:
             return self.start_time
         return 0  # Exe successful

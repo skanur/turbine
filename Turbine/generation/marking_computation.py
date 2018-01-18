@@ -13,6 +13,8 @@ from Turbine.algorithms.solve_SC2 import SolverSC2
 def compute_initial_marking(dataflow, solver_str="Auto", solver_verbose=False, lp_filename=None, period=None):
     """Step 3
     """
+    logger = logging.getLogger(__name__)
+
     coef_vector = None
     if not dataflow.is_normalized:
         coef_vector = dataflow.normalized()
@@ -24,13 +26,13 @@ def compute_initial_marking(dataflow, solver_str="Auto", solver_verbose=False, l
     elif solver_str == "Auto":
         if period is not None:
             solver = SolverSC1Kc(dataflow, float(period), solver_verbose, lp_filename)
-            logging.info("choose solver SC1 Kc")
+            logger.info("choose solver SC1 Kc")
         elif __cs2_row_count(dataflow) < __sc1_row_count(dataflow):
             solver = SolverSC2(dataflow, solver_verbose, lp_filename)
-            logging.info("choose solver SC2")
+            logger.info("choose solver SC2")
         else:
             solver = SolverSC1(dataflow, solver_verbose, lp_filename)
-            logging.info("choose solver SC1")
+            logger.info("choose solver SC1")
 
     elif solver_str == "SC2":
         solver = SolverSC2(dataflow, solver_verbose, lp_filename)
@@ -53,11 +55,11 @@ def compute_initial_marking(dataflow, solver_str="Auto", solver_verbose=False, l
     else:
         raise RuntimeError("Wrong solver argument: no solver called.")
 
-    logging.info("Generating initial marking")
+    logger.info("Generating initial marking")
     solver.compute_initial_marking()
 
     m0tot = __calc_reentrant(dataflow)
-    logging.info("Mem tot (reentrant): " + str(m0tot))
+    logger.info("Mem tot (reentrant): " + str(m0tot))
     del solver
 
     if coef_vector is not None:
@@ -96,6 +98,8 @@ def __sc1_row_count(dataflow):
 
 
 def __compute_reentrant_initial_marking(dataflow):
+    logger = logging.getLogger(__name__)
+
     m0tot = 0
     for arc in dataflow.get_arc_list():
         if dataflow.is_arc_reentrant(arc):
@@ -111,11 +115,13 @@ def __compute_reentrant_initial_marking(dataflow):
 
             dataflow.set_initial_marking(arc, m0)
             m0tot += m0
-            logging.debug("Reentrant initial marking for arc: " + str(arc) + ": " + str(m0))
+            logger.debug("Reentrant initial marking for arc: " + str(arc) + ": " + str(m0))
     return m0tot
 
 
 def __calc_reentrant(dataflow):
+    logger = logging.getLogger(__name__)
+
     m0_tot = 0
     for arc in dataflow.get_arc_list():
         if dataflow.is_arc_reentrant(arc):
@@ -152,6 +158,6 @@ def __calc_reentrant(dataflow):
                     ret_max = w
                 dataflow.set_initial_marking(arc, ret_max)
                 m0_tot += ret_max
-                logging.debug("Reentrant initial marking for arc: " + str(arc) + ": " + str(ret_max))
+                logger.debug("Reentrant initial marking for arc: " + str(arc) + ": " + str(ret_max))
 
     return m0_tot

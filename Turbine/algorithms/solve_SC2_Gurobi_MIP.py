@@ -42,7 +42,9 @@ class SolveSC2GuMIP(object):
         return self.Z  # Return the total amount find by the solver
 
     def __init_prob(self):  # Modify parameters
-        logging.info("Generating initial marking problem")
+        logger = logging.getLogger(__name__)
+
+        logger.info("Generating initial marking problem")
         self.prob = Model("SC2_MIP")
 
         # Gurobi parameters:
@@ -107,16 +109,18 @@ class SolveSC2GuMIP(object):
         self.prob.setObjective(obj, GRB.MINIMIZE)
 
     def __solve_prob(self):  # Launch the solver and set preload of the graph
-        logging.info("loading matrix ...")
+        logger = logging.getLogger(__name__)
+
+        logger.info("loading matrix ...")
         self.prob.update()
 
         if self.lp_filename is not None:
             problem_location = str(self.prob.write(self.lp_filename))
-            logging.info("Writing problem: " + str(problem_location))
+            logger.info("Writing problem: " + str(problem_location))
 
-        logging.info("solving problem ...")
+        logger.info("solving problem ...")
         self.prob.optimize()
-        logging.info("Integer solving done !")
+        logger.info("Integer solving done !")
 
         self.Z = self.prob.objVal
 
@@ -124,7 +128,7 @@ class SolveSC2GuMIP(object):
             if not self.dataflow.is_arc_reentrant(arc):
                 self.dataflow.set_initial_marking(arc, int(self.col_m0[arc].x))
 
-        logging.info("SC2 MIP Mem tot (no reentrant): " + str(self.Z))
+        logger.info("SC2 MIP Mem tot (no reentrant): " + str(self.Z))
 
     # Add a variable lamda
     def __add_col_v(self, name):

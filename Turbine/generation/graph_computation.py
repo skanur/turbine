@@ -42,7 +42,9 @@ def generate_dataflow(dataflow_name, c_param, nx_graph=None):
 
 
 def __generate_connex_graph(dataflow, c_param):
-    logging.info("Generate connex graph")
+    logger = logging.getLogger(__name__)
+
+    logger.info("Generate connex graph")
     task_degree = [0] * c_param.get_nb_task()
     potential_emergency_task = set()
     emergency_task = set()
@@ -73,12 +75,14 @@ def __generate_connex_graph(dataflow, c_param):
                 task_degree_non_null.discard(t)
 
         if dataflow.get_task_count() > 1000 and i % 1000 == 0:
-            logging.info(str(i) + "/" + str(c_param.get_nb_task()) + " tasks generate.")
+            logger.info(str(i) + "/" + str(c_param.get_nb_task()) + " tasks generate.")
     return task_degree
 
 
 def __generate_arcs(dataflow, c_param, task_degree):
-    logging.info("Generate more arcs")
+    logger = logging.getLogger(__name__)
+
+    logger.info("Generate more arcs")
 
     nb_tot_arcs = dataflow.get_task_count() - 1 + sum(task_degree)
     arc_count = dataflow.get_task_count() - 1
@@ -133,14 +137,16 @@ def __generate_arcs(dataflow, c_param, task_degree):
                         task_degree_non_null.discard(random_task)
                 arc_count += 1
                 if dataflow.get_task_count() >= 1000 and arc_count % 1000 == 0:
-                    logging.info(str(arc_count) + "/" + str(nb_tot_arcs) + " arcs added.")
+                    logger.info(str(arc_count) + "/" + str(nb_tot_arcs) + " arcs added.")
 
         task_degree[task] = 0
         task_degree_non_null.discard(task)
 
 
 def __generate_connex_dag(dataflow, c_param):
-    logging.info("Generate connex directed acyclic graph")
+    logger = logging.getLogger(__name__)
+
+    logger.info("Generate connex directed acyclic graph")
     # First generate a path graph with x nodes and x-1 arcs
     if c_param.get_nb_task() < 10:
         path_nodes_nb = rand.randint(2, int(old_div(c_param.get_nb_task(), 2)))
@@ -172,7 +178,7 @@ def __generate_connex_dag(dataflow, c_param):
         task_to_rm[next_task] = [next_task]
 
         if dataflow.get_task_count() > 1000 and dataflow.get_task_count() % 1000 == 0:
-            logging.info(str(dataflow.get_task_count()) + "/" + str(c_param.get_nb_task()) + " tasks generate.")
+            logger.info(str(dataflow.get_task_count()) + "/" + str(c_param.get_nb_task()) + " tasks generate.")
         task_degree_non_null.add(next_task)
 
         __try_add_emergency_task(next_task, potential_emergency_task, emergency_task)
@@ -195,7 +201,7 @@ def __generate_connex_dag(dataflow, c_param):
             task_to_rm[task] = [task]
 
             if dataflow.get_task_count() > 1000 and dataflow.get_task_count() % 1000 == 0:
-                logging.info(str(dataflow.get_task_count()) + "/" + str(c_param.get_nb_task()) + " tasks generate.")
+                logger.info(str(dataflow.get_task_count()) + "/" + str(c_param.get_nb_task()) + " tasks generate.")
             task_rank[task] = path_rank
             arc_added, random_task = __add_random_dag_arc(dataflow, task_degree_non_null, task, task_rank)
             if not arc_added:
@@ -221,7 +227,9 @@ def __generate_connex_dag(dataflow, c_param):
 
 
 def __generate_arcs_dag(dataflow, c_param, task_rank, task_degree, task_to_rm):
-    logging.info("Generate more arcs")
+    logger = logging.getLogger(__name__)
+
+    logger.info("Generate more arcs")
     nb_tot_arcs = dataflow.get_task_count() - 1
     arc_count = dataflow.get_task_count() - 1
 
@@ -254,7 +262,7 @@ def __generate_arcs_dag(dataflow, c_param, task_rank, task_degree, task_to_rm):
 
                     arc_count += 1
                     if dataflow.get_task_count() >= 1000 and arc_count % 1000 == 0:
-                        logging.info(str(arc_count) + "/" + str(nb_tot_arcs) + " ac arcs added.")
+                        logger.info(str(arc_count) + "/" + str(nb_tot_arcs) + " ac arcs added.")
 
             # Put back task temporally removed
             for task_rm in task_to_rm[task]:

@@ -48,7 +48,9 @@ def generate_rates(dataflow, c_param):
 def __generate_rv(dataflow, c_param):
     """Generate the vector of repetition factor RV with gcd(RV) = 1 and SUM(RV)=sumRV
     """
-    logging.info("Generate repetition vector")
+    logger = logging.getLogger(__name__)
+
+    logger.info("Generate repetition vector")
     sum_rv = c_param.get_average_repetition_factor() * dataflow.get_task_count()  # Sum of the repetition vector
 
     gcd_value = 0
@@ -61,7 +63,7 @@ def __generate_rv(dataflow, c_param):
 
     # Modify the two last integers of the list to get a gcd equal to 1
     if gcd_value != 1:
-        logging.info("recalculate GCD")
+        logger.info("recalculate GCD")
         while reduce(gcd, [gcd_value, rv_list[-1], rv_list[-2]]) != 1:
             rv_list[-1] -= 1
             rv_list[-2] += 1
@@ -75,7 +77,9 @@ def __generate_rv(dataflow, c_param):
 def __generate_rates(dataflow, c_param):
     """Generate weights of the dataflow.
     """
-    logging.info("Generate task wight")
+    logger = logging.getLogger(__name__)
+
+    logger.info("Generate task wight")
     k = 0
 
     lcm_value = 1
@@ -85,8 +89,8 @@ def __generate_rates(dataflow, c_param):
     for task in dataflow.get_task_list():
         zi = old_div(lcm_value, dataflow.get_repetition_factor(task))
         if zi == 0:
-            logging.fatal("lcmValue" + str(lcm_value))
-            logging.fatal("null rate when generating, this Exception should never occur...")
+            logger.fatal("lcmValue" + str(lcm_value))
+            logger.fatal("null rate when generating, this Exception should never occur...")
             raise RuntimeError("__generate_phase_lists",
                                "null rate when generating, this Exception should never occur...")
 
@@ -110,7 +114,7 @@ def __generate_rates(dataflow, c_param):
                 prod_list = constrained_sum_sample_pos(phase_count, zi)
                 dataflow.set_prod_rate_list(arc, prod_list)
                 if sum(dataflow.get_prod_rate_list(arc)) != zi:
-                    logging.fatal("constrained_sum_sample_pos return wrong list, "
+                    logger.fatal("constrained_sum_sample_pos return wrong list, "
                                   "it's generally cause by too large number.")
                     raise RuntimeError("__generate_phase_lists constrained_sum_sample_pos return wrong list, "
                                        "it's generally cause by too large number.")
@@ -123,7 +127,7 @@ def __generate_rates(dataflow, c_param):
                                        "it's generally cause by too large number.")
 
         if dataflow.get_task_count() > 1000 and k % 1000 == 0:
-            logging.info(str(k) + "/" + str(dataflow.get_task_count()) + " tasks weigth generation complete.")
+            logger.info(str(k) + "/" + str(dataflow.get_task_count()) + " tasks weigth generation complete.")
         k += 1
 
 
@@ -138,6 +142,8 @@ def __generate_threshold_lists(dataflow):
 def __generate_initial_phase_lists(dataflow, c_param):
     """Generate initial weights of the dataflow.
     """
+    logger = logging.getLogger(__name__)
+
     if c_param.get_max_phase_count_ini() == 0:
         for task in dataflow.get_task_list():
             dataflow.set_ini_phase_count(task, 0)
@@ -147,7 +153,7 @@ def __generate_initial_phase_lists(dataflow, c_param):
             dataflow.set_ini_cons_rate_list(arc, [])
         return
 
-    logging.info("Generate initial task phase list")
+    logger.info("Generate initial task phase list")
     k = 0
     for task in dataflow.get_task_list():
         phase_count_init = rand.randint(c_param.get_min_phase_count_ini(), c_param.get_max_phase_count_ini())
@@ -180,7 +186,7 @@ def __generate_initial_phase_lists(dataflow, c_param):
                 dataflow.set_ini_threshold_list(arc, cons_ini_threshold_list)
 
         if dataflow.get_task_count() > 1000 and k % 1000 == 0:
-            logging.info(str(k) + "/" + str(dataflow.get_task_count()) + " tasks initial weigth generation complete.")
+            logger.info(str(k) + "/" + str(dataflow.get_task_count()) + " tasks initial weigth generation complete.")
         k += 1
 
 

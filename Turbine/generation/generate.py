@@ -18,14 +18,17 @@ def generate(dataflow_name="generated_graph", c_param=None, nx_graph=None):
     nx_graph : if you want to generate a graph with random rates but with specific graph architecture
     (like a random graph generate by NetworkX)
     """
+    logger = logging.getLogger(__name__)
+
     if c_param is None:
         c_param = Parameters()
-    logging.basicConfig(level=c_param.get_logging_level())
+
+    logger.setLevel(level=c_param.get_logging_level())
 
     start = time()
-    logging.info("Generating graph")
+    logger.info("Generating graph")
     dataflow = generate_dataflow(dataflow_name, c_param, nx_graph)
-    logging.info("Generating weight")
+    logger.info("Generating weight")
     generate_rates(dataflow, c_param)
     compute_initial_marking(dataflow,
                             solver_str=c_param.get_solver(),
@@ -33,5 +36,5 @@ def generate(dataflow_name="generated_graph", c_param=None, nx_graph=None):
                             lp_filename=c_param.get_lp_filenam())
     if not c_param.is_normalized():
         dataflow.un_normalized()
-    logging.info("Generating done : " + str(time() - start) + "s")
+    logger.info("Generating done : " + str(time() - start) + "s")
     return dataflow

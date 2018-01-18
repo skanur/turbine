@@ -21,9 +21,10 @@ class ComputePeriod(object):
     """
 
     def __init__(self, dataflow, verbose=False, lp_filename=None):
-        logging.basicConfig(level=logging.ERROR)
+        logger = logging.getLogger(__name__)
+        logger.setLevel(logging.ERROR)
         if verbose:
-            logging.basicConfig(level=logging.DEBUG)
+            logger.setLevel(logging.DEBUG)
         if not dataflow.is_normalized:
             raise ValueError("The dataflow must be normalized !")
 
@@ -45,7 +46,8 @@ class ComputePeriod(object):
         return ret
 
     def __init_prob(self):  # Modify parameters
-        logging.info("Computing period and start time")
+        logger = logging.getLogger(__name__)
+        logger.info("Computing period and start time")
         self.prob = glp_create_prob()
         glp_set_prob_name(self.prob, "period N start time")
         glp_set_obj_dir(self.prob, GLP_MIN)
@@ -62,6 +64,7 @@ class ComputePeriod(object):
         self.glpkParam.out_frq = 2000  # consol print frequency
 
     def __create_col(self):  # Add Col on prob
+        logger = logging.getLogger(__name__)
         # Counting column
         col_count = 1
         if self.dataflow.is_sdf:
@@ -70,7 +73,7 @@ class ComputePeriod(object):
             for task in self.dataflow.get_task_list():
                 col_count += self.dataflow.get_phase_count(task)
 
-        logging.info("Number of column: " + str(col_count))
+        logger.info("Number of column: " + str(col_count))
 
         # Create column
         glp_add_cols(self.prob, col_count)
@@ -89,6 +92,7 @@ class ComputePeriod(object):
                     col += 1
 
     def __create_row(self):  # Add Row (constraint) on prob
+        logger = logging.getLogger(__name__)
         # Counting row
         row_count = 0
         non_overlap = 0
@@ -115,13 +119,13 @@ class ComputePeriod(object):
                     non_overlap += self.dataflow.get_phase_count(task)
 
         # Create row
-        logging.info("Number of rows: " + str(row_count + non_overlap))
+        logger.info("Number of rows: " + str(row_count + non_overlap))
         glp_add_rows(self.prob, row_count + non_overlap)
 
         self.var_array_size = row_count * 3 + non_overlap * 2 + 1
         if self.dataflow.is_csdf:
             self.var_array_size += non_mono_phase
-        logging.info("Var array size: " + str(self.var_array_size))
+        logger.info("Var array size: " + str(self.var_array_size))
         self.var_row = intArray(self.var_array_size)
         self.var_col = intArray(self.var_array_size)
         self.var_coef = doubleArray(self.var_array_size)
@@ -170,16 +174,17 @@ class ComputePeriod(object):
                         row += 1
 
     def __solve_prob(self):  # Launch the solver and set preload of the graph
-        logging.info("loading matrix ...")
+        logger = logging.getLogger(__name__)
+        logger.info("loading matrix ...")
         glp_load_matrix(self.prob, self.var_array_size - 1, self.var_row, self.var_col, self.var_coef)
 
         if self.lp_filename is not None:
             problem_location = str(glp_write_lp(self.prob, None, self.lp_filename))
-            logging.info("Writing problem: " + str(problem_location))
+            logger.info("Writing problem: " + str(problem_location))
 
-        logging.info("solving problem ...")
+        logger.info("solving problem ...")
         ret = glp_simplex(self.prob, self.glpkParam)
-        logging.info("Solver return: " + str(ret))
+        logger.info("Solver return: " + str(ret))
         if not ret == 0:
             raise RuntimeError("solver did not found solution")
 

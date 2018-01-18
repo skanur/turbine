@@ -83,13 +83,15 @@ class Dataflow(object):
 
         :type name: basestring
         """
+        logger = logging.getLogger(__name__)
+
         new_task = self.task_key
         if name is None:
             name = u"t" + str(new_task)
 
         try:  # Detect if a task with the same name exist
             self.get_task_by_name(name)
-            logging.error(u"Name already used by another task")
+            logger.error(u"Name already used by another task")
             return None  # If it is the case the present task is not add.
         except KeyError:
             pass
@@ -439,9 +441,11 @@ class Dataflow(object):
             (default name=lowest unused integer).
         name : (string) the arc name.
         """
+        logger = logging.getLogger(__name__)
+
         try:
             if self.get_arc_by_name(name) != arc:
-                logging.error("Name already used by another arc !")
+                logger.error("Name already used by another arc !")
                 return
         except KeyError:
             pass

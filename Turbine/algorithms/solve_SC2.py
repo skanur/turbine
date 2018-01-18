@@ -32,9 +32,11 @@ class SolverSC2(object):
         return self.Z  # Return the total amount find by the solver
 
     def __init_prob(self):  # Modify parameters
+        logger = logging.getLogger(__name__)
+
         if not self.dataflow.is_normalized:
             raise RuntimeError("Dataflow must be normalized !")
-        logging.info("Generating problem...")
+        logger.info("Generating problem...")
         self.prob = glp_create_prob()
         glp_set_prob_name(self.prob, "min_preload")
         glp_set_obj_dir(self.prob, GLP_MIN)
@@ -50,9 +52,11 @@ class SolverSC2(object):
         self.glpk_param.out_frq = 2000
 
     def __create_col(self):  # Add Col on prob
+        logger = logging.getLogger(__name__)
+
         # Counting column
         col_count = self.dataflow.get_arc_count() * 3
-        logging.info("Number of column: " + str(col_count))
+        logger.info("Number of column: " + str(col_count))
 
         # Create column
         glp_add_cols(self.prob, col_count)
@@ -74,6 +78,8 @@ class SolverSC2(object):
             col += 1
 
     def __create_row(self):  # Add Row (constraint) on prob
+        logger = logging.getLogger(__name__)
+
         # Counting row
         f_row_count = self.dataflow.get_arc_count()
         row_count = 0
@@ -88,11 +94,11 @@ class SolverSC2(object):
                 (self.dataflow.get_output_degree(task) - task_reentrant))
 
         # Create row
-        logging.info("Number of rows: " + str(row_count + f_row_count))
+        logger.info("Number of rows: " + str(row_count + f_row_count))
         glp_add_rows(self.prob, row_count + f_row_count)
 
         self.var_array_size = row_count * 3 + f_row_count * 2 + 1
-        logging.info("Var array size: " + str(self.var_array_size))
+        logger.info("Var array size: " + str(self.var_array_size))
         self.var_row = intArray(self.var_array_size)
         self.var_col = intArray(self.var_array_size)
         self.var_coef = doubleArray(self.var_array_size)
@@ -129,15 +135,17 @@ class SolverSC2(object):
                             # END FILL ROW
 
     def __solve_prob(self):  # Launch the solver and set preload of the graph
+        logger = logging.getLogger(__name__)
+
         glp_load_matrix(self.prob, self.var_array_size - 1, self.var_row, self.var_col, self.var_coef)
 
         if self.lp_filename is not None:
             problem_location = str(glp_write_lp(self.prob, None, self.lp_filename))
-            logging.info("Writing problem: " + str(problem_location))
+            logger.info("Writing problem: " + str(problem_location))
 
-        logging.info("solving problem ...")
+        logger.info("solving problem ...")
         ret = str(glp_simplex(self.prob, self.glpk_param))
-        logging.info("Solveur return: " + ret)
+        logger.info("Solveur return: " + ret)
 
         self.Z = glp_get_obj_val(self.prob)
         opt_buffer = True
@@ -170,11 +178,11 @@ class SolverSC2(object):
         #                     v_v2 = glp_get_col_prim(self.prob, self.colv[str_v2])
         #                     print v_v1, v_v2, self.dataflow.get_initial_marking(arc_out), max_v-step
 
-        logging.info("SC2 Mem tot: " + str(self.Z) + " REV: " + str(buf_rev_tot))
+        logger.info("SC2 Mem tot: " + str(self.Z) + " REV: " + str(buf_rev_tot))
         if opt_buffer:
-            logging.info("Solution SC2 Optimal !!")
+            logger.info("Solution SC2 Optimal !!")
         else:
-            logging.info("Solution SC2 Not Optimal:-(")
+            logger.info("Solution SC2 Not Optimal:-(")
 
     # Add a variable lamda
     def __add_col_v(self, col, name):

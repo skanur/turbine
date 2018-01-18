@@ -49,7 +49,9 @@ class SolverSC1Kc(object):
         return self.Z  # Return the total amount find by the solver
 
     def __init_prob(self):  # Modify parameters
-        logging.info("Generating initial marking problem")
+        logger = logging.getLogger(__name__)
+
+        logger.info("Generating initial marking problem")
         self.prob = glp_create_prob()
         glp_set_prob_name(self.prob, "min_preload")
         glp_set_obj_dir(self.prob, GLP_MIN)
@@ -66,6 +68,8 @@ class SolverSC1Kc(object):
         self.glpk_param.out_frq = 2000  # consol print frequency
 
     def __create_col(self):  # Add Col on prob
+        logger = logging.getLogger(__name__)
+
         # Counting column
         tot_phase_count = 0
         for task in self.dataflow.get_task_list():
@@ -77,7 +81,7 @@ class SolverSC1Kc(object):
                 tot_phase_count += self.dataflow.get_ini_phase_count(task)
 
         col_count = tot_phase_count + self.dataflow.get_arc_count() * 2
-        logging.info("Number of column: " + str(col_count))
+        logger.info("Number of column: " + str(col_count))
 
         # Create column
         glp_add_cols(self.prob, col_count)
@@ -107,6 +111,8 @@ class SolverSC1Kc(object):
                 col += 1
 
     def __create_row(self):  # Add Row (constraint) on prob
+        logger = logging.getLogger(__name__)
+
         # Counting row
         f_row_count = self.dataflow.get_arc_count()
         for arc in self.dataflow.get_arc_list():
@@ -130,11 +136,11 @@ class SolverSC1Kc(object):
                     row_count += source_phase_count * target_phase_count
 
         # Create row
-        logging.info("Number of rows: " + str(row_count + f_row_count))
+        logger.info("Number of rows: " + str(row_count + f_row_count))
         glp_add_rows(self.prob, row_count + f_row_count)
 
         self.var_array_size = row_count * 3 + f_row_count * 2 + 1
-        logging.info("Var array size: " + str(self.var_array_size))
+        logger.info("Var array size: " + str(self.var_array_size))
         self.var_row = intArray(self.var_array_size)
         self.var_col = intArray(self.var_array_size)
         self.var_coef = doubleArray(self.var_array_size)
@@ -194,27 +200,29 @@ class SolverSC1Kc(object):
                         # END FILL ROW
 
     def __solve_prob(self):  # Launch the solver and set preload/initial marking of the graph
-        logging.info("loading matrix ...")
+        logger = logging.getLogger(__name__)
+
+        logger.info("loading matrix ...")
         glp_load_matrix(self.prob, self.var_array_size - 1, self.var_row, self.var_col, self.var_coef)
 
         if self.lp_filename is not None:
             problem_location = str(glp_write_lp(self.prob, None, self.lp_filename))
-            logging.info("Writing problem: " + str(problem_location))
+            logger.info("Writing problem: " + str(problem_location))
 
-        logging.info("solving problem ...")
+        logger.info("solving problem ...")
         ret = glp_simplex(self.prob, self.glpk_param)
-        logging.info("Solver return: " + str(ret))
+        logger.info("Solver return: " + str(ret))
 
-        if logging.getLogger().getEffectiveLevel() == logging.DEBUG:
+        if logger.getLogger().getEffectiveLevel() == logging.DEBUG:
             for arc in self.dataflow.get_arc_list():
-                logging.debug(str(arc) + " M0: " + str(glp_get_col_prim(self.prob, self.col_m0[arc])) + " FM0: " +
+                logger.debug(str(arc) + " M0: " + str(glp_get_col_prim(self.prob, self.col_m0[arc])) + " FM0: " +
                               str(glp_get_col_prim(self.prob, self.col_fm0[arc])))
             for arc in self.dataflow.get_arc_list():
                 source = self.dataflow.get_source(arc)
                 target = self.dataflow.get_target(arc)
                 for phase_s in range(self.__get_range_phases(source)):
                     for phase_t in range(self.__get_range_phases(target)):
-                        logging.debug(str(arc) + " V" + str(source) + "/" + str(phase_s) + ": " +
+                        logger.debug(str(arc) + " V" + str(source) + "/" + str(phase_s) + ": " +
                                       str(glp_get_col_prim(self.prob, self.colV[str(source) + "/" + str(phase_s)])) +
                                       " V" + str(target) + "/" + str(phase_t) + ": " +
                                       str(glp_get_col_prim(self.prob, self.colV[str(target) + "/" + str(phase_t)])))
@@ -240,11 +248,11 @@ class SolverSC1Kc(object):
                     self.dataflow.set_initial_marking(arc, int((int(fm0) + 1) * step))
                     buf_rev_tot += (int(fm0) + 1) * step
 
-        logging.info("SC1 Mem tot (no reentrant): " + str(self.Z) + " REV: " + str(buf_rev_tot))
+        logger.info("SC1 Mem tot (no reentrant): " + str(self.Z) + " REV: " + str(buf_rev_tot))
         if opt_buffer:
-            logging.info("Solution SC1 Optimal !!")
+            logger.info("Solution SC1 Optimal !!")
         else:
-            logging.info("Solution SC1 Not Optimal:-(")
+            logger.info("Solution SC1 Not Optimal:-(")
 
     # Add a variable lamda
     def __add_col_v(self, col, name):

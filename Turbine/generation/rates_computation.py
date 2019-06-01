@@ -88,7 +88,7 @@ def __generate_rates(dataflow, c_param):
 
     for task in dataflow.get_task_list():
         #zi = old_div(lcm_value, dataflow.get_repetition_factor(task))
-        zi = np.divide(lcm_value, dataflow.get_repetition_factor(task), dtype=np.int64)
+        zi = np.int64(lcm_value/dataflow.get_repetition_factor(task))
         if zi <= 0:
             logger.fatal("lcmValue" + str(lcm_value))
             logger.fatal("null/neg rate when generating, this Exception should never occur...")

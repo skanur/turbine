@@ -7,7 +7,7 @@ import numpy as np
 # def lcm(a, b):
 #     return old_div(abs(a * b), gcd(a, b))
 def lcm(a, b):
-    np.lcm(np.int64(a), np.int64(b), dtype=np.int64)
+    return np.lcm(np.int64(a), np.int64(b), dtype=np.int64)
 
 
 def lcm_list(l):

@@ -87,12 +87,13 @@ def __generate_rates(dataflow, c_param):
         lcm_value = lcm(lcm_value, dataflow.get_repetition_factor(task))
 
     for task in dataflow.get_task_list():
-        zi = old_div(lcm_value, dataflow.get_repetition_factor(task))
-        if zi == 0:
+        #zi = old_div(lcm_value, dataflow.get_repetition_factor(task))
+        zi = np.divide(lcm_value, dataflow.get_repetition_factor(task), dtype=np.int64)
+        if zi <= 0:
             logger.fatal("lcmValue" + str(lcm_value))
-            logger.fatal("null rate when generating, this Exception should never occur...")
+            logger.fatal("null/neg rate when generating, this Exception should never occur...")
             raise RuntimeError("__generate_phase_lists",
-                               "null rate when generating, this Exception should never occur...")
+                               "null/neg rate when generating, this Exception should never occur...")
 
         if dataflow.is_sdf:
             duration = rand.randint(1, c_param.get_average_time() * 2 - 1)

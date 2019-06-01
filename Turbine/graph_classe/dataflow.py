@@ -5,6 +5,7 @@ from future.utils import python_2_unicode_compatible
 import logging
 
 import networkx as nx
+import numpy as np
 
 from Turbine.algorithms.normalized import normalized_dataflow, un_normalized_dataflow
 from Turbine.algorithms.rv import compute_rep_vect
@@ -510,7 +511,7 @@ class Dataflow(object):
         attrib : (integer) the value of the attribute.
         attribName : (string) the attribute name.
         """
-        self.nxg[arc[0]][arc[1]][arc[2]][attrib_name] = attrib
+        self.nxg[arc[0]][arc[1]][arc[2]][attrib_name] = np.int64(attrib)
 
     ########################################################################
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~PROPERTIES of arcs~~~~~~~~~~~~~~~~~~~~~~~ #
